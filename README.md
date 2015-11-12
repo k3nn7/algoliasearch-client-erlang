@@ -19,7 +19,7 @@ Quick Start
 Object = {},
 Client = algolia:make_client("YourApplicationID", "YourAPIKey"),
 Index = algolia:init_index(Client, "IndexName"),
-algolia:add_object(Index, Object).
+algolia_index:add_object(Index, Object).
 ```
 
 To do (iteration #1)
