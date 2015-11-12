@@ -20,6 +20,13 @@ Object = {},
 Client = algolia:make_client("YourApplicationID", "YourAPIKey"),
 Index = algolia:init_index(Client, "IndexName"),
 algolia_index:add_object(Index, Object).
+
+```
+
+Testing
+-------
+```bash
+$ rebar eu
 ```
 
 To do (iteration #1)
