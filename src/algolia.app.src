@@ -1,0 +1,14 @@
+{application, algolia,
+ [
+  {description, "An Erlang algolia library"},
+  {vsn, "1"},
+  {modules, [
+             algolia
+            ]},
+  {registered, []},
+  {applications, [
+                  kernel,
+                  stdlib
+                 ]},
+  {env, []}
+ ]}.
