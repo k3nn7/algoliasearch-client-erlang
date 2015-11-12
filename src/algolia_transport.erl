@@ -1,13 +1,15 @@
 -module(algolia_transport).
 
--export([build_request/5]).
+-export([build_request/6]).
 
-build_request(Method, Host, Path, AppId, ApiKey) ->
+build_request(Method, Host, Path, Body, AppId, ApiKey) ->
   Url = lists:flatten(io_lib:format("https://~s~s", [Host, Path])),
   Headers = build_headers(AppId, ApiKey),
+  EncodedBody = jiffy:encode(Body),
   [
     {method, Method},
     {url, Url},
+    {body, EncodedBody},
     {headers, Headers}
   ].
 

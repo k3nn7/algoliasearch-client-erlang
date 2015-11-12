@@ -9,6 +9,7 @@ add_object_test() ->
     [
       {method, post},
       {url, "https://foo.algolia.net/1/indexes/baz/123"},
+      {body, <<"\"abc\"">>},
       {headers, [
         {"Content-Type", "application/json; charset=utf-8"},
         {"X-Algolia-Application-Id", "foo"},
@@ -17,5 +18,5 @@ add_object_test() ->
         {"User-Agent", "Algolia for Erlang"}
       ]}
     ],
-    algolia_index:add_object(Index, "abc")
+    algolia_index:add_object(Index, <<"abc">>)
   ).
