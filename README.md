@@ -16,7 +16,7 @@ $ rebar get-deps
 Quick Start
 -----------
 ```erlang
-Object = {},
+Object = {[{<<"objectID">>, <<"1234">>j}]},
 Client = algolia:make_client("YourApplicationID", "YourAPIKey"),
 Index = algolia:init_index(Client, "IndexName"),
 algolia_index:add_object(Index, Object).
