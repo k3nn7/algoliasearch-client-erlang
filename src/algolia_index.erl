@@ -1,17 +1,12 @@
 -module(algolia_index).
 
--export([add_object/2, add_object_request/2]).
+-export([add_object/2, add_object_request/2, search_request/2, search/2]).
 
 add_object(Index, Object) ->
   algolia_transport:do_request(add_object_request(Index, Object)).
 
-add_object_request(_Index = {algolia_index, IndexOptions}, Object = {ObjectPropList}) ->
-  IndexName = proplists:get_value(index_name, IndexOptions),
-  {algolia_client, ClientOptions} = proplists:get_value(client, IndexOptions),
-  [WriteHost | _] = proplists:get_value(write_hosts, ClientOptions),
-  AppId = proplists:get_value(app_id, ClientOptions),
-  ApiKey = proplists:get_value(api_key, ClientOptions),
-
+add_object_request(Index, Object = {ObjectPropList}) ->
+  {IndexName, AppId, ApiKey, _, WriteHost} = get_index_options(Index),
   case proplists:get_value(<<"objectID">>, ObjectPropList, false) of
     false ->
       Path = lists:flatten(io_lib:format("/1/indexes/~s", [IndexName])),
@@ -20,3 +15,26 @@ add_object_request(_Index = {algolia_index, IndexOptions}, Object = {ObjectPropL
       Path = lists:flatten(io_lib:format("/1/indexes/~s/~s", [IndexName, ObjectID])),
       algolia_transport:build_request(put, WriteHost, Path, Object, AppId, ApiKey)
   end.
+
+search(Index, Query) ->
+  algolia_transport:do_request(search_request(Index, Query)).
+
+search_request(Index, Query) ->
+  {IndexName, AppId, ApiKey, ReadHost, _} = get_index_options(Index),
+  Body = {[
+    {<<"params">>, {[
+      {<<"query">>, Query}
+    ]}}
+  ]},
+  Path = lists:flatten(io_lib:format("/1/indexes/~s/query", [IndexName])),
+  algolia_transport:build_request(post, ReadHost, Path, Body, AppId, ApiKey).
+
+get_index_options(_Index = {algolia_index, IndexOptions}) ->
+  IndexName = proplists:get_value(index_name, IndexOptions),
+  {algolia_client, ClientOptions} = proplists:get_value(client, IndexOptions),
+  [ReadHost| _] = proplists:get_value(read_hosts, ClientOptions),
+  [WriteHost | _] = proplists:get_value(write_hosts, ClientOptions),
+  AppId = proplists:get_value(app_id, ClientOptions),
+  ApiKey = proplists:get_value(api_key, ClientOptions),
+  {IndexName, AppId, ApiKey, ReadHost, WriteHost}.
+
