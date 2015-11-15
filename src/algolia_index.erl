@@ -3,7 +3,7 @@
 -export([add_object/2, add_object_request/2]).
 
 add_object(Index, Object) ->
-  add_object_request(Index, Object).
+  algolia_transport:do_request(add_object_request(Index, Object)).
 
 add_object_request(_Index = {algolia_index, IndexOptions}, Object = {ObjectPropList}) ->
   IndexName = proplists:get_value(index_name, IndexOptions),
