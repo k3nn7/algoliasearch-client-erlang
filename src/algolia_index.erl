@@ -1,8 +1,11 @@
 -module(algolia_index).
 
--export([add_object/2]).
+-export([add_object/2, add_object_request/2]).
 
-add_object(_Index = {algolia_index, IndexOptions}, Object = {ObjectPropList}) ->
+add_object(Index, Object) ->
+  add_object_request(Index, Object).
+
+add_object_request(_Index = {algolia_index, IndexOptions}, Object = {ObjectPropList}) ->
   IndexName = proplists:get_value(index_name, IndexOptions),
   {algolia_client, ClientOptions} = proplists:get_value(client, IndexOptions),
   [WriteHost | _] = proplists:get_value(write_hosts, ClientOptions),

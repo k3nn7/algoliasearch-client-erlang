@@ -33,7 +33,7 @@ To do (iteration #1)
 ----
 - [x] Initializing client
 - [x] Initializing request
-- [ ] Building request
-- [ ] Making request over HTTP
+- [x] Building request
+- [x] Making request over HTTP
 - [ ] Logic for querying index
-- [ ] Logic fot fetching index
+- [x] Logic fot feeding index

@@ -21,7 +21,7 @@ add_object_test() ->
         {"User-Agent", "Algolia for Erlang"}
       ]}
     ],
-    algolia_index:add_object(Index, Object)
+    algolia_index:add_object_request(Index, Object)
   ).
 
 add_object_with_given_id_test() ->
@@ -44,5 +44,5 @@ add_object_with_given_id_test() ->
         {"User-Agent", "Algolia for Erlang"}
       ]}
     ],
-    algolia_index:add_object(Index, Object)
+    algolia_index:add_object_request(Index, Object)
   ).
