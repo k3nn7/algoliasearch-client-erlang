@@ -21,10 +21,9 @@ search(Index, Query) ->
 
 search_request(Index, Query) ->
   {IndexName, AppId, ApiKey, ReadHost, _} = get_index_options(Index),
+  Params = list_to_binary(io_lib:format("query=~s", [Query])),
   Body = {[
-    {<<"params">>, {[
-      {<<"query">>, Query}
-    ]}}
+    {<<"params">>, Params}
   ]},
   Path = lists:flatten(io_lib:format("/1/indexes/~s/query", [IndexName])),
   algolia_transport:build_request(post, ReadHost, Path, Body, AppId, ApiKey).

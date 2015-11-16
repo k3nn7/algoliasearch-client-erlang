@@ -54,7 +54,7 @@ search_test() ->
     [
       {method, post},
       {url, "https://foo-dsn.algolia.net/1/indexes/baz/query"},
-      {body, <<"{\"params\":{\"query\":\"foo\"}}">>},
+      {body, <<"{\"params\":\"query=foo\"}">>},
       {headers, [
         {"Content-Type", "application/json; charset=utf-8"},
         {"X-Algolia-Application-Id", "foo"},
