@@ -3,7 +3,9 @@
 -export([add_object/2, add_object_request/2, search_request/2, search/2]).
 
 add_object(Index, Object) ->
-  algolia_transport:do_request(add_object_request(Index, Object)).
+  algolia_transport:handle_response(
+    algolia_transport:do_request(
+      add_object_request(Index, Object))).
 
 add_object_request(Index, Object = {ObjectPropList}) ->
   {IndexName, AppId, ApiKey, _, WriteHost} = get_index_options(Index),
@@ -17,7 +19,9 @@ add_object_request(Index, Object = {ObjectPropList}) ->
   end.
 
 search(Index, Query) ->
-  algolia_transport:do_request(search_request(Index, Query)).
+  algolia_transport:handle_response(
+    algolia_transport:do_request(
+      search_request(Index, Query))).
 
 search_request(Index, Query) ->
   {IndexName, AppId, ApiKey, ReadHost, _} = get_index_options(Index),

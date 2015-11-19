@@ -1,6 +1,6 @@
 -module(algolia_transport).
 
--export([build_request/6, do_request/1]).
+-export([build_request/6, do_request/1, handle_response/1]).
 
 build_request(Method, Host, Path, Body, AppId, ApiKey) ->
   Url = lists:flatten(io_lib:format("https://~s~s", [Host, Path])),
@@ -28,3 +28,18 @@ do_request(Request) ->
   Method = proplists:get_value(method, Request),
   Body = proplists:get_value(body, Request),
   ibrowse:send_req(Url, Headers, Method, Body).
+
+handle_response({ok, Code, _Headers, Body}) ->
+  handle_http_result(list_to_integer(Code), Body).
+
+handle_http_result(Code, Body) when ((Code >= 200) and (Code < 300)) ->
+  try jiffy:decode(list_to_binary(Body)) of
+    DecodedBody ->
+      {ok, DecodedBody}
+  catch
+    _:_ ->
+      {error, invalid_json}
+  end;
+
+handle_http_result(_Code, Body) ->
+  {error, Body}.
