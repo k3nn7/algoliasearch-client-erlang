@@ -30,13 +30,34 @@ Object = {[{<<"objectID">>, <<"1234">>}, {<<"content">>, <<"foo bar">>}]},
 Client = algolia:make_client("YourApplicationID", "YourAPIKey"),
 Index = algolia:init_index(Client, "IndexName"),
 algolia_index:add_object(Index, Object).
-
 ```
 
 Querying index:
 
 ```erlang
 Results = algolia_index:search(Index, <<"foo">>).
+{ok,{[{<<"hits">>,
+       [{[{<<"content">>,<<"foo">>},
+          {<<"objectID">>,<<"53383650">>},
+          {<<"_highlightResult">>,
+           {[{<<"content">>,
+              {[{<<"value">>,<<"<em>foo</em>">>},
+                {<<"matchLevel">>,<<"full">>},
+                {<<"matchedWords">>,[<<"foo">>]}]}}]}}]},
+        {[{<<"content">>,<<"foo">>},
+          {<<"objectID">>,<<"1234">>},
+          {<<"_highlightResult">>,
+           {[{<<"content">>,
+              {[{<<"value">>,<<"<em>foo</em>">>},
+                {<<"matchLevel">>,<<"full">>},
+                {<<"matchedWords">>,[<<"foo">>]}]}}]}}]}]},
+      {<<"nbHits">>,2},
+      {<<"page">>,0},
+      {<<"nbPages">>,1},
+      {<<"hitsPerPage">>,20},
+      {<<"processingTimeMS">>,1},
+      {<<"query">>,<<"foo">>},
+      {<<"params">>,<<"query=foo">>}]}}
 ```
 
 Testing
@@ -53,4 +74,4 @@ To do (iteration #1)
 - [x] Making request over HTTP
 - [x] Logic for querying index
 - [x] Logic for feeding index
-- [ ] Logic for parsing response
+- [x] Logic for parsing response
