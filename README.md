@@ -65,13 +65,3 @@ Testing
 ```bash
 $ rebar eu
 ```
-
-To do (iteration #1)
-----
-- [x] Initializing client
-- [x] Initializing request
-- [x] Building request
-- [x] Making request over HTTP
-- [x] Logic for querying index
-- [x] Logic for feeding index
-- [x] Logic for parsing response
