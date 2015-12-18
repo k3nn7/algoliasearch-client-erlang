@@ -1,5 +1,7 @@
 # Algolia Search API Client for Erlang
 
+[![Build Status](https://travis-ci.org/k3nn7/algoliasearch-client-erlang.svg)](https://travis-ci.org/k3nn7/algoliasearch-client-erlang)
+
 Setup
 -----
 
