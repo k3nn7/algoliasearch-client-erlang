@@ -62,6 +62,16 @@ Results = algolia_index:search(Index, <<"foo">>).
       {<<"params">>,<<"query=foo">>}]}}
 ```
 
+Query index with additional parameters:
+```erlang
+Results = algolia_index:search(Index, <<"foo">>, {[
+      {<<"queryType">>, <<"prefixAll">>},
+      {<<"hitsPerPage">>, 10},
+      {<<"getRankingInfo">>, 1}
+
+]}).
+```
+
 Testing
 -------
 ```bash
