@@ -107,3 +107,21 @@ search_with_additional_parameters_test() ->
       {<<"getRankingInfo">>, 1}
     ]})
   ).
+
+get_settings_test() ->
+  Client = algolia:make_client("foo", "bar"),
+  Index = algolia:init_index(Client, "abc xyz"),
+  ?assertEqual(
+    [
+      {method, get},
+      {url, "https://foo-dsn.algolia.net/1/indexes/abc%20xyz/settings"},
+      {headers, [
+        {"Content-Type", "application/json; charset=utf-8"},
+        {"X-Algolia-Application-Id", "foo"},
+        {"X-Algolia-API-Key", "bar"},
+        {"Connection", "keep-alive"},
+        {"User-Agent", "Algolia for Erlang"}
+      ]}
+    ],
+    algolia_index:get_settings_request(Index)
+  ).
