@@ -63,5 +63,47 @@ search_test() ->
         {"User-Agent", "Algolia for Erlang"}
       ]}
     ],
-    algolia_index:search_request(Index, <<"foo">>)
+    algolia_index:search_request(Index, <<"foo">>, {[]})
+  ).
+
+search_other_query_test() ->
+  Client = algolia:make_client("foo", "bar"),
+  Index = algolia:init_index(Client, "baz"),
+  ?assertEqual(
+    [
+      {method, post},
+      {url, "https://foo-dsn.algolia.net/1/indexes/baz/query"},
+      {body, <<"{\"params\":\"query=foo%20bar\"}">>},
+      {headers, [
+        {"Content-Type", "application/json; charset=utf-8"},
+        {"X-Algolia-Application-Id", "foo"},
+        {"X-Algolia-API-Key", "bar"},
+        {"Connection", "keep-alive"},
+        {"User-Agent", "Algolia for Erlang"}
+      ]}
+    ],
+    algolia_index:search_request(Index, <<"foo bar">>, {[]})
+  ).
+
+search_with_additional_parameters_test() ->
+  Client = algolia:make_client("foo", "bar"),
+  Index = algolia:init_index(Client, "baz"),
+  ?assertEqual(
+    [
+      {method, post},
+      {url, "https://foo-dsn.algolia.net/1/indexes/baz/query"},
+      {body, <<"{\"params\":\"queryType=prefixAll&hitsPerPage=10&getRankingInfo=1&query=foo\"}">>},
+      {headers, [
+        {"Content-Type", "application/json; charset=utf-8"},
+        {"X-Algolia-Application-Id", "foo"},
+        {"X-Algolia-API-Key", "bar"},
+        {"Connection", "keep-alive"},
+        {"User-Agent", "Algolia for Erlang"}
+      ]}
+    ],
+    algolia_index:search_request(Index, <<"foo">>, {[
+      {<<"queryType">>, <<"prefixAll">>},
+      {<<"hitsPerPage">>, 10},
+      {<<"getRankingInfo">>, 1}
+    ]})
   ).

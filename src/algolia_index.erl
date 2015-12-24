@@ -1,6 +1,7 @@
 -module(algolia_index).
 
--export([add_object/2, add_object_request/2, search_request/2, search/2]).
+-export([add_object/2, add_object_request/2, search/2, search/3,
+  search_request/3]).
 
 add_object(Index, Object) ->
   algolia_transport:handle_response(
@@ -19,18 +20,22 @@ add_object_request(Index, Object = {ObjectPropList}) ->
   end.
 
 search(Index, Query) ->
+  search(Index, Query, {[]}).
+
+search(Index, Query, Params) ->
   algolia_transport:handle_response(
     algolia_transport:do_request(
-      search_request(Index, Query))).
+      search_request(Index, Query, Params))).
 
-search_request(Index, Query) ->
+search_request(Index, Query, AdditionalParams) ->
   {IndexName, AppId, ApiKey, ReadHost, _} = get_index_options(Index),
-  Params = list_to_binary(io_lib:format("query=~s", [Query])),
+  Params = build_search_params(Query, AdditionalParams),
   Body = {[
-    {<<"params">>, Params}
+    {<<"params">>, list_to_binary(Params)}
   ]},
   Path = lists:flatten(io_lib:format("/1/indexes/~s/query", [IndexName])),
   algolia_transport:build_request(post, ReadHost, Path, Body, AppId, ApiKey).
+
 
 get_index_options(_Index = {algolia_index, IndexOptions}) ->
   IndexName = proplists:get_value(index_name, IndexOptions),
@@ -41,3 +46,34 @@ get_index_options(_Index = {algolia_index, IndexOptions}) ->
   ApiKey = proplists:get_value(api_key, ClientOptions),
   {IndexName, AppId, ApiKey, ReadHost, WriteHost}.
 
+build_search_params(Query, {Params}) ->
+  QueryWithParams = lists:append([
+    Params,
+    [{<<"query">>, Query}]
+  ]),
+  build_query_params(QueryWithParams, []).
+
+build_query_params([], Acc) ->
+  Acc;
+build_query_params([{Key, Val} | Rest], Acc) ->
+  case Acc of
+    [] ->
+      Query = io_lib:format("~s=~s", [
+        http_uri:encode(binary_to_list(Key)),
+        http_uri:encode(format_query_value(Val))
+      ]);
+    _ ->
+      Query = io_lib:format("~s&~s=~s", [
+        Acc,
+        http_uri:encode(binary_to_list(Key)),
+        http_uri:encode(format_query_value(Val))
+      ])
+  end,
+  build_query_params(Rest, lists:flatten(Query)).
+
+format_query_value(Value) when is_list(Value) ->
+  Value;
+format_query_value(Value) when is_binary(Value) ->
+  binary_to_list(Value);
+format_query_value(Value) when is_integer(Value) ->
+  integer_to_list(Value).
