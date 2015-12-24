@@ -1,6 +1,15 @@
 -module(algolia_transport).
 
--export([build_request/6, do_request/1, handle_response/1]).
+-export([build_request/6, build_request/5, do_request/1, handle_response/1]).
+
+build_request(Method, Host, Path, AppId, ApiKey) ->
+  Url = lists:flatten(io_lib:format("https://~s~s", [Host, Path])),
+  Headers = build_headers(AppId, ApiKey),
+  [
+    {method, Method},
+    {url, Url},
+    {headers, Headers}
+  ].
 
 build_request(Method, Host, Path, Body, AppId, ApiKey) ->
   Url = lists:flatten(io_lib:format("https://~s~s", [Host, Path])),

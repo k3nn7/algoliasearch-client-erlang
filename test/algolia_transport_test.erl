@@ -29,6 +29,29 @@ build_request_test() ->
     )
   ).
 
+build_request_without_body_test() ->
+  ?assertEqual(
+    [
+      {method, get},
+      {url, "https://foo-dsn.algolia.net/1/indexes/bar/123"},
+      {headers, [
+        {"Content-Type", "application/json; charset=utf-8"},
+        {"X-Algolia-Application-Id", "abc"},
+        {"X-Algolia-API-Key", "def"},
+        {"Connection", "keep-alive"},
+        {"User-Agent", "Algolia for Erlang"}
+      ]}
+    ],
+    algolia_transport:build_request(
+      get,
+      "foo-dsn.algolia.net",
+      "/1/indexes/bar/123",
+      "abc",
+      "def"
+    )
+  ).
+
+
 handle_valid_response_test() ->
   HttpResponse = {ok, "200", [], "{\"key\":\"val\"}"},
   ExpectedResult = {ok, {[{<<"key">>, <<"val">>}]}},
