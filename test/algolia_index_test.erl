@@ -125,3 +125,25 @@ get_settings_test() ->
     ],
     algolia_index:get_settings_request(Index)
   ).
+
+set_settings_test() ->
+  Client = algolia:make_client("foo", "bar"),
+  Index = algolia:init_index(Client, "abc xyz"),
+  ?assertEqual(
+    [
+      {method, put},
+      {url, "https://foo.algolia.net/1/indexes/abc%20xyz/settings"},
+      {body, <<"{\"hitsPerPage\":50,\"attributesToIndex\":[\"name\",\"email\"]}">>},
+      {headers, [
+        {"Content-Type", "application/json; charset=utf-8"},
+        {"X-Algolia-Application-Id", "foo"},
+        {"X-Algolia-API-Key", "bar"},
+        {"Connection", "keep-alive"},
+        {"User-Agent", "Algolia for Erlang"}
+      ]}
+    ],
+    algolia_index:set_settings_request(Index, {[
+      {<<"hitsPerPage">>, 50},
+      {<<"attributesToIndex">>, [<<"name">>, <<"email">>]}
+    ]})
+  ).
