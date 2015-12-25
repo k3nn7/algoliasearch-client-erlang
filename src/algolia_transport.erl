@@ -35,8 +35,13 @@ do_request(Request) ->
   Url = proplists:get_value(url, Request),
   Headers = proplists:get_value(headers, Request),
   Method = proplists:get_value(method, Request),
-  Body = proplists:get_value(body, Request),
-  ibrowse:send_req(Url, Headers, Method, Body).
+  Body = proplists:get_value(body, Request, false),
+  case Body of
+    false ->
+      ibrowse:send_req(Url, Headers, Method);
+    Body ->
+      ibrowse:send_req(Url, Headers, Method, Body)
+  end.
 
 handle_response({ok, Code, _Headers, Body}) ->
   handle_http_result(list_to_integer(Code), Body).
