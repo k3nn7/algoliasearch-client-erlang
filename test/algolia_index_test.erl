@@ -47,6 +47,29 @@ add_object_with_given_id_test() ->
     algolia_index:add_object_request(Index, Object)
   ).
 
+update_object_test() ->
+  Client = algolia:make_client("foo", "bar"),
+  Index = algolia:init_index(Client, "baz"),
+  Object = {[
+    {<<"objectID">>, <<"4321">>},
+    {<<"content">>, <<"foo bar">>}
+  ]},
+  ?assertEqual(
+    [
+      {method, put},
+      {url, "https://foo.algolia.net/1/indexes/baz/4321"},
+      {body, <<"{\"objectID\":\"4321\",\"content\":\"foo bar\"}">>},
+      {headers, [
+        {"Content-Type", "application/json; charset=utf-8"},
+        {"X-Algolia-Application-Id", "foo"},
+        {"X-Algolia-API-Key", "bar"},
+        {"Connection", "keep-alive"},
+        {"User-Agent", "Algolia for Erlang"}
+      ]}
+    ],
+    algolia_index:update_object_request(Index, Object)
+  ).
+
 search_test() ->
   Client = algolia:make_client("foo", "bar"),
   Index = algolia:init_index(Client, "baz"),

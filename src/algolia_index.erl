@@ -1,7 +1,8 @@
 -module(algolia_index).
 
--export([add_object/2, search/2, search/3, get_settings/1, set_settings/2]).
+-export([add_object/2, update_object/2, search/2, search/3, get_settings/1, set_settings/2]).
 -export([add_object_request/2, search_request/3, get_settings_request/1, set_settings_request/2]).
+-export([update_object_request/2]).
 
 add_object(Index, Object) ->
   algolia_transport:handle_response(
@@ -18,6 +19,16 @@ add_object_request(Index, Object = {ObjectPropList}) ->
       Path = lists:flatten(io_lib:format("/1/indexes/~s/~s", [IndexName, ObjectID])),
       algolia_transport:build_request(put, WriteHost, Path, Object, AppId, ApiKey)
   end.
+
+update_object(Index, Object) ->
+  algolia_transport:handle_response(
+    algolia_transport:do_request(update_object_request(Index, Object))).
+
+update_object_request(Index, Object = {ObjectPropList}) ->
+  {IndexName, AppId, ApiKey, _, WriteHost} = get_index_options(Index),
+  ObjectID = proplists:get_value(<<"objectID">>, ObjectPropList),
+  Path = lists:flatten(io_lib:format("/1/indexes/~s/~s", [IndexName, ObjectID])),
+  algolia_transport:build_request(put, WriteHost, Path, Object, AppId, ApiKey).
 
 search(Index, Query) ->
   search(Index, Query, {[]}).
@@ -61,7 +72,7 @@ set_settings_request(Index, Settings) ->
 get_index_options(_Index = {algolia_index, IndexOptions}) ->
   IndexName = http_uri:encode(proplists:get_value(index_name, IndexOptions)),
   {algolia_client, ClientOptions} = proplists:get_value(client, IndexOptions),
-  [ReadHost| _] = proplists:get_value(read_hosts, ClientOptions),
+  [ReadHost | _] = proplists:get_value(read_hosts, ClientOptions),
   [WriteHost | _] = proplists:get_value(write_hosts, ClientOptions),
   AppId = proplists:get_value(app_id, ClientOptions),
   ApiKey = proplists:get_value(api_key, ClientOptions),
