@@ -1,6 +1,6 @@
 -module(algolia_index).
 
--export([add_object/2, search/2, search/3, get_settings/1]).
+-export([add_object/2, search/2, search/3, get_settings/1, set_settings/2]).
 -export([add_object_request/2, search_request/3, get_settings_request/1, set_settings_request/2]).
 
 add_object(Index, Object) ->
@@ -47,6 +47,11 @@ get_settings_request(Index) ->
   {IndexName, AppId, ApiKey, ReadHost, _} = get_index_options(Index),
   Path = lists:flatten(io_lib:format("/1/indexes/~s/settings", [IndexName])),
   algolia_transport:build_request(get, ReadHost, Path, AppId, ApiKey).
+
+set_settings(Index, Settings) ->
+  algolia_transport:handle_response(
+    algolia_transport:do_request(
+      set_settings_request(Index, Settings))).
 
 set_settings_request(Index, Settings) ->
   {IndexName, AppId, ApiKey, _, WriteHost} = get_index_options(Index),
