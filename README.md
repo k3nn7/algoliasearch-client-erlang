@@ -34,6 +34,14 @@ Index = algolia:init_index(Client, "IndexName"),
 algolia_index:add_object(Index, Object).
 ```
 
+Updating existing object:
+```erlang
+Object = {[{<<"objectID">>, <<"1234">>}, {<<"content">>, <<"foo bar">>}]},
+Client = algolia:make_client("YourApplicationID", "YourAPIKey"),
+Index = algolia:init_index(Client, "IndexName"),
+algolia_index:update_object(Index, Object).
+```
+
 Querying index:
 
 ```erlang
@@ -70,6 +78,43 @@ Results = algolia_index:search(Index, <<"foo">>, {[
       {<<"getRankingInfo">>, 1}
 
 ]}).
+```
+
+Getting index settings:
+```erlang
+Client = algolia:make_client("YourApplicationID", "YourAPIKey"),
+Index = algolia:init_index(Client, "IndexName"),
+Settings = algolia_index:get_settings(Index).
+{ok,{[{<<"minWordSizefor1Typo">>,4},
+      {<<"minWordSizefor2Typos">>,8},
+      {<<"hitsPerPage">>,20},
+      {<<"maxValuesPerFacet">>,100},
+      {<<"attributesToIndex">>,null},
+      {<<"numericAttributesToIndex">>,null},
+      {<<"attributesToRetrieve">>,null},
+      {<<"unretrievableAttributes">>,null},
+      {<<"optionalWords">>,null},
+      {<<"attributesForFaceting">>,null},
+      {<<"attributesToSnippet">>,null},
+      {<<"attributesToHighlight">>,null},
+      {<<"attributeForDistinct">>,null},
+      {<<"ranking">>,
+       [<<"typo">>,<<"geo">>,<<"words">>,<<"proximity">>,<<"attribute">>,
+        <<"exact">>,<<"custom">>]},
+      {<<"customRanking">>,[<<"desc(content)">>]},
+      {<<"separatorsToIndex">>,<<>>},
+      {<<"removeWordsIfNoResults">>,<<"none">>},
+      {<<"queryType">>,<<"prefixLast">>},
+      {<<"highlightPreTag">>,<<"<em>">>},
+      {<<"highlightPostTag">>,<<"</em>">>}]}}
+```
+
+Change index settings:
+```erlang
+Client = algolia:make_client("YourApplicationID", "YourAPIKey"),
+Index = algolia:init_index(Client, "IndexName"),
+Settings = {[{<<"customRanking">>, [<<"desc(content)">>]}]},
+algolia_index:set_settings(Index, Settings).
 ```
 
 Testing
