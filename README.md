@@ -42,6 +42,14 @@ Index = algolia:init_index(Client, "IndexName"),
 algolia_index:update_object(Index, Object).
 ```
 
+Partially update existing object:
+```erlang
+Object = {[{<<"objectID">>, <<"1234">>}, {<<"content">>, <<"foo bar">>}]},
+Client = algolia:make_client("YourApplicationID", "YourAPIKey"),
+Index = algolia:init_index(Client, "IndexName"),
+algolia_index:update_object(Index, Object).
+```
+
 Querying index:
 
 ```erlang
