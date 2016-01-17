@@ -130,7 +130,18 @@ Delete an object:
 Client = algolia:make_client("YourApplicationID", "YourAPIKey"),
 Index = algolia:init_index(Client, "IndexName"),
 ObjectID = <<"1234">>,
-algolia_index:delete_object(Index,ObjectID).
+algolia_index:delete_object(Index, ObjectID).
+```
+
+Get an object:
+```erlang
+Client = algolia:make_client("YourApplicationID", "YourAPIKey"),
+Index = algolia:init_index(Client, "IndexName"),
+ObjectID = <<"1234">>,
+% Retrieves all attributes
+algolia_index:get_object(Index, ObjectID).
+% Retrieves name and age
+algolia_index:get_object(Index, ObjectID, <<"name,age">>).
 ```
 
 Testing
