@@ -248,3 +248,21 @@ set_settings_test() ->
       {<<"attributesToIndex">>, [<<"name">>, <<"email">>]}
     ]})
   ).
+
+delete_test() ->
+  Client = algolia:make_client("foo", "bar"),
+  Index = algolia:init_index(Client, "abc xyz"),
+  ?assertEqual(
+    [
+      {method, delete},
+      {url, "https://foo.algolia.net/1/indexes/abc%20xyz"},
+      {headers, [
+        {"Content-Type", "application/json; charset=utf-8"},
+        {"X-Algolia-Application-Id", "foo"},
+        {"X-Algolia-API-Key", "bar"},
+        {"Connection", "keep-alive"},
+        {"User-Agent", "Algolia for Erlang"}
+      ]}
+    ],
+    algolia_index:delete_request(Index)
+  ).

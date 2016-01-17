@@ -150,6 +150,13 @@ Client = algolia:make_client("YourApplicationID", "YourAPIKey"),
 algolia:list_indices(Client)
 ```
 
+Delete an index
+```erlang
+Client = algolia:make_client("YourApplicationID", "YourAPIKey"),
+Index = algolia:init_index(Client, "IndexName"),
+algolia_index:delete(Index).
+```
+
 Testing
 -------
 ```bash
