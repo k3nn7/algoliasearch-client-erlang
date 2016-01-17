@@ -157,6 +157,13 @@ Index = algolia:init_index(Client, "IndexName"),
 algolia_index:delete(Index).
 ```
 
+Clear an index
+```erlang
+Client = algolia:make_client("YourApplicationID", "YourAPIKey"),
+Index = algolia:init_index(Client, "IndexName"),
+algolia_index:clear(Index).
+```
+
 Testing
 -------
 ```bash

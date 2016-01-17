@@ -1,10 +1,10 @@
 -module(algolia_index).
 
 -export([add_object/2, update_object/2, search/2, search/3, get_settings/1, set_settings/2]).
--export([partial_update_object/2, delete_object/2, get_object/2, get_object/3, delete/1]).
+-export([partial_update_object/2, delete_object/2, get_object/2, get_object/3, delete/1, clear/1]).
 -export([add_object_request/2, search_request/3, get_settings_request/1, set_settings_request/2]).
 -export([update_object_request/2, partial_update_object_request/2, delete_object_request/2]).
--export([get_object_request/2, get_object_request/3, delete_request/1]).
+-export([get_object_request/2, get_object_request/3, delete_request/1, clear_request/1]).
 
 add_object(Index, Object) ->
   algolia_transport:handle_response(
@@ -118,6 +118,15 @@ delete_request(Index) ->
   {IndexName, AppId, ApiKey, _, WriteHost} = get_index_options(Index),
   Path = lists:flatten(io_lib:format("/1/indexes/~s", [IndexName])),
   algolia_transport:build_request(delete, WriteHost, Path, AppId, ApiKey).
+
+clear(Index) ->
+  algolia_transport:handle_response(
+    algolia_transport:do_request(clear_request(Index))).
+
+clear_request(Index) ->
+  {IndexName, AppId, ApiKey, _, WriteHost} = get_index_options(Index),
+  Path = lists:flatten(io_lib:format("/1/indexes/~s/clear", [IndexName])),
+  algolia_transport:build_request(post, WriteHost, Path, AppId, ApiKey).
 
 get_index_options(_Index = {algolia_index, IndexOptions}) ->
   IndexName = http_uri:encode(proplists:get_value(index_name, IndexOptions)),
