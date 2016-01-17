@@ -93,6 +93,25 @@ partial_update_object_test() ->
     algolia_index:partial_update_object_request(Index, Object)
   ).
 
+delete_object_test() ->
+  Client = algolia:make_client("foo", "bar"),
+  Index = algolia:init_index(Client, "baz"),
+  ObjectId = <<"12345">>,
+  ?assertEqual(
+    [
+      {method, delete},
+      {url, "https://foo.algolia.net/1/indexes/baz/12345"},
+      {headers, [
+        {"Content-Type", "application/json; charset=utf-8"},
+        {"X-Algolia-Application-Id", "foo"},
+        {"X-Algolia-API-Key", "bar"},
+        {"Connection", "keep-alive"},
+        {"User-Agent", "Algolia for Erlang"}
+      ]}
+    ],
+    algolia_index:delete_object_request(Index, ObjectId)
+  ).
+
 search_test() ->
   Client = algolia:make_client("foo", "bar"),
   Index = algolia:init_index(Client, "baz"),

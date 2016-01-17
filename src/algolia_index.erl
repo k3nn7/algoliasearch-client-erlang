@@ -1,9 +1,9 @@
 -module(algolia_index).
 
 -export([add_object/2, update_object/2, search/2, search/3, get_settings/1, set_settings/2]).
--export([partial_update_object/2]).
+-export([partial_update_object/2, delete_object/2]).
 -export([add_object_request/2, search_request/3, get_settings_request/1, set_settings_request/2]).
--export([update_object_request/2, partial_update_object_request/2]).
+-export([update_object_request/2, partial_update_object_request/2, delete_object_request/2]).
 
 add_object(Index, Object) ->
   algolia_transport:handle_response(
@@ -40,6 +40,15 @@ partial_update_object_request(Index, Object = {ObjectPropList}) ->
   ObjectID = proplists:get_value(<<"objectID">>, ObjectPropList),
   Path = lists:flatten(io_lib:format("/1/indexes/~s/~s/partial", [IndexName, ObjectID])),
   algolia_transport:build_request(post, WriteHost, Path, Object, AppId, ApiKey).
+
+delete_object(Index, ObjectID) ->
+  algolia_transport:handle_response(
+    algolia_transport:do_request(delete_object_request(Index, ObjectID))).
+
+delete_object_request(Index, ObjectID) ->
+  {IndexName, AppId, ApiKey, _, WriteHost} = get_index_options(Index),
+  Path = lists:flatten(io_lib:format("/1/indexes/~s/~s", [IndexName, ObjectID])),
+  algolia_transport:build_request(delete, WriteHost, Path, AppId, ApiKey).
 
 search(Index, Query) ->
   search(Index, Query, {[]}).

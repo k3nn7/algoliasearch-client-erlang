@@ -125,6 +125,14 @@ Settings = {[{<<"customRanking">>, [<<"desc(content)">>]}]},
 algolia_index:set_settings(Index, Settings).
 ```
 
+Delete an object:
+```erlang
+Client = algolia:make_client("YourApplicationID", "YourAPIKey"),
+Index = algolia:init_index(Client, "IndexName"),
+ObjectID = <<"1234">>,
+algolia_index:delete_object(Index,ObjectID).
+```
+
 Testing
 -------
 ```bash
