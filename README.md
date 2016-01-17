@@ -88,6 +88,25 @@ Results = algolia_index:search(Index, <<"foo">>, {[
 ]}).
 ```
 
+Delete an object:
+```erlang
+Client = algolia:make_client("YourApplicationID", "YourAPIKey"),
+Index = algolia:init_index(Client, "IndexName"),
+ObjectID = <<"1234">>,
+algolia_index:delete_object(Index, ObjectID).
+```
+
+Get an object:
+```erlang
+Client = algolia:make_client("YourApplicationID", "YourAPIKey"),
+Index = algolia:init_index(Client, "IndexName"),
+ObjectID = <<"1234">>,
+% Retrieves all attributes
+algolia_index:get_object(Index, ObjectID).
+% Retrieves name and age
+algolia_index:get_object(Index, ObjectID, <<"name,age">>).
+```
+
 Getting index settings:
 ```erlang
 Client = algolia:make_client("YourApplicationID", "YourAPIKey"),
@@ -125,23 +144,10 @@ Settings = {[{<<"customRanking">>, [<<"desc(content)">>]}]},
 algolia_index:set_settings(Index, Settings).
 ```
 
-Delete an object:
+List indices
 ```erlang
 Client = algolia:make_client("YourApplicationID", "YourAPIKey"),
-Index = algolia:init_index(Client, "IndexName"),
-ObjectID = <<"1234">>,
-algolia_index:delete_object(Index, ObjectID).
-```
-
-Get an object:
-```erlang
-Client = algolia:make_client("YourApplicationID", "YourAPIKey"),
-Index = algolia:init_index(Client, "IndexName"),
-ObjectID = <<"1234">>,
-% Retrieves all attributes
-algolia_index:get_object(Index, ObjectID).
-% Retrieves name and age
-algolia_index:get_object(Index, ObjectID, <<"name,age">>).
+algolia:list_indices(Client)
 ```
 
 Testing

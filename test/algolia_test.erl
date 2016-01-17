@@ -15,6 +15,24 @@ init_index_test() ->
     algolia:init_index(Client, "baz")
   ).
 
+list_indices_test() ->
+  Client = algolia:make_client("foo", "bar"),
+  ?assertEqual(
+    [
+      {method, get},
+      {url, "https://foo-dsn.algolia.net/1/indexes"},
+      {headers, [
+        {"Content-Type", "application/json; charset=utf-8"},
+        {"X-Algolia-Application-Id", "foo"},
+        {"X-Algolia-API-Key", "bar"},
+        {"Connection", "keep-alive"},
+        {"User-Agent", "Algolia for Erlang"}
+      ]}
+    ],
+    algolia:list_indices_request(Client)
+  ).
+
+
 foo_client() ->
   {algolia_client, [
     {app_id, "foo"},
