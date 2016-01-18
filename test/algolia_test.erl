@@ -1,6 +1,9 @@
 -module(algolia_test).
 -compile(export_all).
+
 -include_lib("eunit/include/eunit.hrl").
+-include("client.hrl").
+-include("index.hrl").
 
 create_client_test() ->
   ?assertEqual(
@@ -34,25 +37,25 @@ list_indices_test() ->
 
 
 foo_client() ->
-  {algolia_client, [
-    {app_id, "foo"},
-    {api_key, "bar"},
-    {read_hosts, [
+  #algolia_client{
+    app_id = "foo",
+    api_key = "bar",
+    read_hosts = [
       "foo-dsn.algolia.net",
       "foo-1.algolianet.com",
       "foo-2.algolianet.com",
       "foo-3.algolianet.com"
-    ]},
-    {write_hosts, [
+    ],
+    write_hosts = [
       "foo.algolia.net",
       "foo-1.algolianet.com",
       "foo-2.algolianet.com",
       "foo-3.algolianet.com"
-    ]}
-  ]}.
+    ]
+  }.
 
 baz_index() ->
-  {algolia_index, [
-    {index_name, "baz"},
-    {client, foo_client()}
-  ]}.
+  #algolia_index{
+    index_name = "baz",
+    client = foo_client()
+  }.

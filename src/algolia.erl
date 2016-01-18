@@ -3,6 +3,9 @@
 -export([make_client/2, init_index/2, list_indices/1]).
 -export([list_indices_request/1]).
 
+-include("client.hrl").
+-include("index.hrl").
+
 -define(readHosts, [
   "~s-dsn.algolia.net",
   "~s-1.algolianet.com",
@@ -25,18 +28,18 @@ make_client(AppId, ApiKey) ->
     fun(HostFormat) -> lists:flatten(io_lib:format(HostFormat, [AppId])) end,
     ?writeHosts
   ),
-  {algolia_client, [
-    {app_id, AppId},
-    {api_key, ApiKey},
-    {read_hosts, ReadHosts},
-    {write_hosts, WriteHosts}
-  ]}.
+  #algolia_client{
+    app_id = AppId,
+    api_key = ApiKey,
+    read_hosts = ReadHosts,
+    write_hosts = WriteHosts
+  }.
 
 init_index(Client, IndexName) ->
-  {algolia_index, [
-    {index_name, IndexName},
-    {client, Client}
-  ]}.
+  #algolia_index{
+    index_name = IndexName,
+    client = Client
+  }.
 
 list_indices(Client) ->
   algolia_transport:handle_response(
@@ -47,9 +50,9 @@ list_indices_request(Client) ->
   Path = lists:flatten(io_lib:format("/1/indexes", [])),
   algolia_transport:build_request(get, ReadHost, Path, AppId, ApiKey).
 
-get_client_options(_Client = {algolia_client, ClientOptions}) ->
-  [ReadHost | _] = proplists:get_value(read_hosts, ClientOptions),
-  [WriteHost | _] = proplists:get_value(write_hosts, ClientOptions),
-  AppId = proplists:get_value(app_id, ClientOptions),
-  ApiKey = proplists:get_value(api_key, ClientOptions),
+get_client_options(Client) ->
+  [ReadHost | _] = Client#algolia_client.read_hosts,
+  [WriteHost | _] = Client#algolia_client.write_hosts,
+  AppId = Client#algolia_client.app_id,
+  ApiKey = Client#algolia_client.api_key,
   {AppId, ApiKey, ReadHost, WriteHost}.

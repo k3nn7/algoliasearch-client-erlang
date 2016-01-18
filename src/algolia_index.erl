@@ -6,6 +6,9 @@
 -export([update_object_request/2, partial_update_object_request/2, delete_object_request/2]).
 -export([get_object_request/2, get_object_request/3, delete_request/1, clear_request/1]).
 
+-include("client.hrl").
+-include("index.hrl").
+
 add_object(Index, Object) ->
   algolia_transport:handle_response(
     algolia_transport:do_request(
@@ -128,13 +131,13 @@ clear_request(Index) ->
   Path = lists:flatten(io_lib:format("/1/indexes/~s/clear", [IndexName])),
   algolia_transport:build_request(post, WriteHost, Path, AppId, ApiKey).
 
-get_index_options(_Index = {algolia_index, IndexOptions}) ->
-  IndexName = http_uri:encode(proplists:get_value(index_name, IndexOptions)),
-  {algolia_client, ClientOptions} = proplists:get_value(client, IndexOptions),
-  [ReadHost | _] = proplists:get_value(read_hosts, ClientOptions),
-  [WriteHost | _] = proplists:get_value(write_hosts, ClientOptions),
-  AppId = proplists:get_value(app_id, ClientOptions),
-  ApiKey = proplists:get_value(api_key, ClientOptions),
+get_index_options(Index) ->
+  IndexName = http_uri:encode(Index#algolia_index.index_name),
+  Client = Index#algolia_index.client,
+  [ReadHost | _] = Client#algolia_client.read_hosts,
+  [WriteHost | _] = Client#algolia_client.write_hosts,
+  AppId = Client#algolia_client.app_id,
+  ApiKey = Client#algolia_client.api_key,
   {IndexName, AppId, ApiKey, ReadHost, WriteHost}.
 
 build_search_params(Query, {Params}) ->
