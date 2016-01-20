@@ -35,6 +35,11 @@ list_indices_test() ->
     algolia:list_indices_request(Client)
   ).
 
+list_indices_new_test() ->
+  ExpectedRequest = {get, "/1/indexes"},
+  ExpectedResult = {ok, #{<<"items">> => []}},
+  Client = algolia_mock_client:make(ExpectedRequest, ExpectedResult),
+  ?assertEqual(ExpectedResult, algolia:list_indices_new(Client)).
 
 foo_client() ->
   #algolia_client{
