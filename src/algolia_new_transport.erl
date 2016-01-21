@@ -1,6 +1,6 @@
 -module(algolia_new_transport).
 
--export([handle_response/1, make_request_builder/2]).
+-export([make_transport/2, handle_response/1, make_request_builder/2]).
 
 -define(readHosts, [
   "~s-dsn.algolia.net",
@@ -16,13 +16,23 @@
   "~s-3.algolianet.com"
 ]).
 
+make_transport(AppId, ApiKey) ->
+  HttpRequestBuilder = make_request_builder(AppId, ApiKey),
+  fun(Request) ->
+    handle_response(
+      do_request(
+        HttpRequestBuilder(Request)
+      )
+    )
+  end.
+
 make_request_builder(AppId, ApiKey) ->
   fun
     ({WhichHost, Method, Path}) ->
       build_request(AppId, ApiKey, WhichHost, Method, Path);
     ({WhichHost, Method, Path, Body}) ->
       build_request(AppId, ApiKey, WhichHost, Method, Path, Body)
-    end.
+  end.
 
 build_request(AppId, ApiKey, WhichHost, Method, Path) ->
   Host = get_host(WhichHost, AppId),
@@ -46,7 +56,7 @@ get_host(read, AppId) ->
   ),
   Host;
 get_host(write, AppId) ->
-  [Host | _ ] = lists:map(
+  [Host | _] = lists:map(
     fun(HostFormat) -> lists:flatten(io_lib:format(HostFormat, [AppId])) end,
     ?writeHosts
   ),
