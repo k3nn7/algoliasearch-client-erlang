@@ -43,3 +43,27 @@ build_write_request_test() ->
     ExpectedBuildedRequest,
     BuildedRequest
   ).
+
+handle_valid_response_test() ->
+  HttpResponse = {ok, "200", [], "{\"key\":\"val\"}"},
+  ExpectedResult = {ok, #{<<"key">> => <<"val">>}},
+  ?assertEqual(
+    ExpectedResult,
+    algolia_new_transport:handle_response(HttpResponse)
+  ).
+
+handle_invalid_json_response_test() ->
+  HttpResponse = {ok, "200", [], "foo-!@"},
+  ExpectedResult = {error, invalid_json},
+  ?assertEqual(
+    ExpectedResult,
+    algolia_new_transport:handle_response(HttpResponse)
+  ).
+
+handle_http_error_test() ->
+  HttpResponse = {ok, "500", [], "internal error"},
+  ExpectedResult = {error, "internal error"},
+  ?assertEqual(
+    ExpectedResult,
+    algolia_new_transport:handle_response(HttpResponse)
+  ).

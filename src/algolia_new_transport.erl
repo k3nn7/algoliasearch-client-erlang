@@ -1,6 +1,6 @@
 -module(algolia_new_transport).
 
--export([make_request_builder/2]).
+-export([handle_response/1, make_request_builder/2]).
 
 -define(readHosts, [
   "~s-dsn.algolia.net",
@@ -60,3 +60,18 @@ build_headers(AppId, ApiKey) ->
     {"Connection", "keep-alive"},
     {"User-Agent", "Algolia for Erlang"}
   ].
+
+handle_response({ok, Code, _Headers, Body}) ->
+  handle_http_result(list_to_integer(Code), Body).
+
+handle_http_result(Code, Body) when ((Code >= 200) and (Code < 300)) ->
+  try jiffy:decode(list_to_binary(Body), [return_maps]) of
+    DecodedBody ->
+      {ok, DecodedBody}
+  catch
+    _:_ ->
+      {error, invalid_json}
+  end;
+
+handle_http_result(_Code, Body) ->
+  {error, Body}.
