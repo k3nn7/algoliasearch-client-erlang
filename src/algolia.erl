@@ -32,7 +32,8 @@ make_client(AppId, ApiKey) ->
     app_id = AppId,
     api_key = ApiKey,
     read_hosts = ReadHosts,
-    write_hosts = WriteHosts
+    write_hosts = WriteHosts,
+    transport = algolia_new_transport:make_transport(AppId, ApiKey)
   }.
 
 init_index(Client, IndexName) ->
