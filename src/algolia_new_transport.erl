@@ -75,3 +75,15 @@ handle_http_result(Code, Body) when ((Code >= 200) and (Code < 300)) ->
 
 handle_http_result(_Code, Body) ->
   {error, Body}.
+
+do_request(Request) ->
+  Url = proplists:get_value(url, Request),
+  Headers = proplists:get_value(headers, Request),
+  Method = proplists:get_value(method, Request),
+  Body = proplists:get_value(body, Request, false),
+  case Body of
+    false ->
+      ibrowse:send_req(Url, Headers, Method);
+    Body ->
+      ibrowse:send_req(Url, Headers, Method, Body)
+  end.
