@@ -43,8 +43,8 @@ init_index(Client, IndexName) ->
 
 list_indices_new(Client) ->
   Path = lists:flatten(io_lib:format("/1/indexes", [])),
-  ReadTransport = Client#algolia_client.read_transport,
-  ReadTransport({get, Path}).
+  Transport = Client#algolia_client.transport,
+  Transport({read, get, Path}).
 
 list_indices(Client) ->
   algolia_transport:handle_response(
