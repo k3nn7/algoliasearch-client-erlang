@@ -33,27 +33,15 @@ update_object_test() ->
   ?assertEqual(ExpectedResult, algolia_index:update_object(Index, Object)).
 
 partial_update_object_test() ->
-  Client = algolia:make_client("foo", "bar"),
+  Object = #{
+    <<"objectID">> => <<"4321">>,
+    <<"content">> => <<"foo bar">>
+  },
+  ExpectedRequest = {write, post, "/1/indexes/baz/4321/partial", Object},
+  ExpectedResult = {ok, #{<<"objectID">> => <<"213">>}},
+  Client = algolia_mock_client:make(ExpectedRequest, ExpectedResult),
   Index = algolia:init_index(Client, "baz"),
-  Object = {[
-    {<<"objectID">>, <<"4321">>},
-    {<<"content">>, <<"foo bar">>}
-  ]},
-  ?assertEqual(
-    [
-      {method, post},
-      {url, "https://foo.algolia.net/1/indexes/baz/4321/partial"},
-      {body, <<"{\"objectID\":\"4321\",\"content\":\"foo bar\"}">>},
-      {headers, [
-        {"Content-Type", "application/json; charset=utf-8"},
-        {"X-Algolia-Application-Id", "foo"},
-        {"X-Algolia-API-Key", "bar"},
-        {"Connection", "keep-alive"},
-        {"User-Agent", "Algolia for Erlang"}
-      ]}
-    ],
-    algolia_index:partial_update_object_request(Index, Object)
-  ).
+  ?assertEqual(ExpectedResult, algolia_index:partial_update_object(Index, Object)).
 
 delete_object_test() ->
   Client = algolia:make_client("foo", "bar"),
