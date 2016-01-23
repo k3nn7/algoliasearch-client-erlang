@@ -1,7 +1,6 @@
 -module(algolia).
 
--export([make_client/2, init_index/2, list_indices/1, list_indices_new/1]).
--export([list_indices_request/1]).
+-export([make_client/2, init_index/2, list_indices/1]).
 
 -include("client.hrl").
 -include("index.hrl").
@@ -42,19 +41,10 @@ init_index(Client, IndexName) ->
     client = Client
   }.
 
-list_indices_new(Client) ->
+list_indices(Client) ->
   Path = lists:flatten(io_lib:format("/1/indexes", [])),
   Transport = Client#algolia_client.transport,
   Transport({read, get, Path}).
-
-list_indices(Client) ->
-  algolia_transport:handle_response(
-    algolia_transport:do_request(list_indices_request(Client))).
-
-list_indices_request(Client) ->
-  {AppId, ApiKey, ReadHost, _} = get_client_options(Client),
-  Path = lists:flatten(io_lib:format("/1/indexes", [])),
-  algolia_transport:build_request(get, ReadHost, Path, AppId, ApiKey).
 
 get_client_options(Client) ->
   [ReadHost | _] = Client#algolia_client.read_hosts,
