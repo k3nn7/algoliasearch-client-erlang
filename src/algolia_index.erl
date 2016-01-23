@@ -2,7 +2,6 @@
 
 -export([add_object/2, update_object/2, search/2, search/3, get_settings/1, set_settings/2]).
 -export([partial_update_object/2, delete_object/2, get_object/2, get_object/3, delete/1, clear/1]).
--export([clear_request/1]).
 
 -include("client.hrl").
 -include("index.hrl").
@@ -88,22 +87,10 @@ delete(Index) ->
   Transport({write, delete, Path}).
 
 clear(Index) ->
-  algolia_transport:handle_response(
-    algolia_transport:do_request(clear_request(Index))).
-
-clear_request(Index) ->
-  {IndexName, AppId, ApiKey, _, WriteHost} = get_index_options(Index),
+  IndexName = Index#algolia_index.index_name,
   Path = lists:flatten(io_lib:format("/1/indexes/~s/clear", [IndexName])),
-  algolia_transport:build_request(post, WriteHost, Path, AppId, ApiKey).
-
-get_index_options(Index) ->
-  IndexName = http_uri:encode(Index#algolia_index.index_name),
-  Client = Index#algolia_index.client,
-  [ReadHost | _] = Client#algolia_client.read_hosts,
-  [WriteHost | _] = Client#algolia_client.write_hosts,
-  AppId = Client#algolia_client.app_id,
-  ApiKey = Client#algolia_client.api_key,
-  {IndexName, AppId, ApiKey, ReadHost, WriteHost}.
+  Transport = Index#algolia_index.client#algolia_client.transport,
+  Transport({write, post, Path}).
 
 build_query_params(Params) ->
   maps:fold(fun format_query_string/3, [], Params).

@@ -121,19 +121,8 @@ delete_test() ->
   ?assertEqual(ExpectedResult, algolia_index:delete(Index)).
 
 clear_test() ->
-  Client = algolia:make_client("foo", "bar"),
-  Index = algolia:init_index(Client, "abc xyz"),
-  ?assertEqual(
-    [
-      {method, post},
-      {url, "https://foo.algolia.net/1/indexes/abc%20xyz/clear"},
-      {headers, [
-        {"Content-Type", "application/json; charset=utf-8"},
-        {"X-Algolia-Application-Id", "foo"},
-        {"X-Algolia-API-Key", "bar"},
-        {"Connection", "keep-alive"},
-        {"User-Agent", "Algolia for Erlang"}
-      ]}
-    ],
-    algolia_index:clear_request(Index)
-  ).
+  ExpectedRequest = {write, post, "/1/indexes/baz/clear"},
+  ExpectedResult = {ok, #{<<"objectID">> => <<"213">>}},
+  Client = algolia_mock_client:make(ExpectedRequest, ExpectedResult),
+  Index = algolia:init_index(Client, "baz"),
+  ?assertEqual(ExpectedResult, algolia_index:clear(Index)).
