@@ -2,7 +2,6 @@
 
 -export([add_object/2, update_object/2, search/2, search/3, get_settings/1, set_settings/2]).
 -export([partial_update_object/2, delete_object/2, get_object/2, get_object/3, delete/1, clear/1]).
--export([set_settings_request/2]).
 -export([delete_request/1, clear_request/1]).
 
 -include("client.hrl").
@@ -77,14 +76,10 @@ get_settings(Index) ->
   Transport({read, get, Path}).
 
 set_settings(Index, Settings) ->
-  algolia_transport:handle_response(
-    algolia_transport:do_request(
-      set_settings_request(Index, Settings))).
-
-set_settings_request(Index, Settings) ->
-  {IndexName, AppId, ApiKey, _, WriteHost} = get_index_options(Index),
+  IndexName = Index#algolia_index.index_name,
   Path = lists:flatten(io_lib:format("/1/indexes/~s/settings", [IndexName])),
-  algolia_transport:build_request(put, WriteHost, Path, Settings, AppId, ApiKey).
+  Transport = Index#algolia_index.client#algolia_client.transport,
+  Transport({write, put, Path, Settings}).
 
 delete(Index) ->
   algolia_transport:handle_response(

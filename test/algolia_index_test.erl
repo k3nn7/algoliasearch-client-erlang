@@ -103,26 +103,15 @@ get_settings_test() ->
   ?assertEqual(ExpectedResult, algolia_index:get_settings(Index)).
 
 set_settings_test() ->
-  Client = algolia:make_client("foo", "bar"),
-  Index = algolia:init_index(Client, "abc xyz"),
-  ?assertEqual(
-    [
-      {method, put},
-      {url, "https://foo.algolia.net/1/indexes/abc%20xyz/settings"},
-      {body, <<"{\"hitsPerPage\":50,\"attributesToIndex\":[\"name\",\"email\"]}">>},
-      {headers, [
-        {"Content-Type", "application/json; charset=utf-8"},
-        {"X-Algolia-Application-Id", "foo"},
-        {"X-Algolia-API-Key", "bar"},
-        {"Connection", "keep-alive"},
-        {"User-Agent", "Algolia for Erlang"}
-      ]}
-    ],
-    algolia_index:set_settings_request(Index, {[
-      {<<"hitsPerPage">>, 50},
-      {<<"attributesToIndex">>, [<<"name">>, <<"email">>]}
-    ]})
-  ).
+  RequestBody = #{
+    <<"hitsPerPage">> => 50,
+    <<"attributesToIndex">> => [<<"name">>, <<"email">>]
+  },
+  ExpectedRequest = {write, put, "/1/indexes/baz/settings", RequestBody},
+  ExpectedResult = {ok, #{<<"objectID">> => <<"213">>}},
+  Client = algolia_mock_client:make(ExpectedRequest, ExpectedResult),
+  Index = algolia:init_index(Client, "baz"),
+  ?assertEqual(ExpectedResult, algolia_index:set_settings(Index, RequestBody)).
 
 delete_test() ->
   Client = algolia:make_client("foo", "bar"),
