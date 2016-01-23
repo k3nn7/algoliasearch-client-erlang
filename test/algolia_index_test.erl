@@ -44,23 +44,11 @@ partial_update_object_test() ->
   ?assertEqual(ExpectedResult, algolia_index:partial_update_object(Index, Object)).
 
 delete_object_test() ->
-  Client = algolia:make_client("foo", "bar"),
+  ExpectedRequest = {write, delete, "/1/indexes/baz/4321"},
+  ExpectedResult = {ok, #{<<"objectID">> => <<"213">>}},
+  Client = algolia_mock_client:make(ExpectedRequest, ExpectedResult),
   Index = algolia:init_index(Client, "baz"),
-  ObjectId = <<"12345">>,
-  ?assertEqual(
-    [
-      {method, delete},
-      {url, "https://foo.algolia.net/1/indexes/baz/12345"},
-      {headers, [
-        {"Content-Type", "application/json; charset=utf-8"},
-        {"X-Algolia-Application-Id", "foo"},
-        {"X-Algolia-API-Key", "bar"},
-        {"Connection", "keep-alive"},
-        {"User-Agent", "Algolia for Erlang"}
-      ]}
-    ],
-    algolia_index:delete_object_request(Index, ObjectId)
-  ).
+  ?assertEqual(ExpectedResult, algolia_index:delete_object(Index, <<"4321">>)).
 
 search_test() ->
   Client = algolia:make_client("foo", "bar"),

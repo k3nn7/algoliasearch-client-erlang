@@ -37,8 +37,10 @@ partial_update_object(Index, Object) ->
   Transport({write, post, Path, Object}).
 
 delete_object(Index, ObjectID) ->
-  algolia_transport:handle_response(
-    algolia_transport:do_request(delete_object_request(Index, ObjectID))).
+  IndexName = http_uri:encode(Index#algolia_index.index_name),
+  Path = lists:flatten(io_lib:format("/1/indexes/~s/~s", [IndexName, ObjectID])),
+  Transport = Index#algolia_index.client#algolia_client.transport,
+  Transport({write, delete, Path}).
 
 delete_object_request(Index, ObjectID) ->
   {IndexName, AppId, ApiKey, _, WriteHost} = get_index_options(Index),
