@@ -5,8 +5,6 @@
 
 make(ExpectedRequest, ApiResponse) ->
   #algolia_client{
-    app_id = "foo",
-    api_key = "bar",
     transport = make_transport(ExpectedRequest, ApiResponse)
   }.
 

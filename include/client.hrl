@@ -1,1 +1,1 @@
--record(algolia_client, {app_id, api_key, read_hosts, write_hosts, transport}).
+-record(algolia_client, {transport}).

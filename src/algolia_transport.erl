@@ -1,8 +1,41 @@
 -module(algolia_transport).
 
--export([build_request/6, build_request/5, do_request/1, handle_response/1]).
+-export([make_transport/2, handle_response/1, make_request_builder/2]).
 
-build_request(Method, Host, Path, AppId, ApiKey) ->
+-define(readHosts, [
+  "~s-dsn.algolia.net",
+  "~s-1.algolianet.com",
+  "~s-2.algolianet.com",
+  "~s-3.algolianet.com"
+]).
+
+-define(writeHosts, [
+  "~s.algolia.net",
+  "~s-1.algolianet.com",
+  "~s-2.algolianet.com",
+  "~s-3.algolianet.com"
+]).
+
+make_transport(AppId, ApiKey) ->
+  HttpRequestBuilder = make_request_builder(AppId, ApiKey),
+  fun(Request) ->
+    handle_response(
+      do_request(
+        HttpRequestBuilder(Request)
+      )
+    )
+  end.
+
+make_request_builder(AppId, ApiKey) ->
+  fun
+    ({WhichHost, Method, Path}) ->
+      build_request(AppId, ApiKey, WhichHost, Method, Path);
+    ({WhichHost, Method, Path, Body}) ->
+      build_request(AppId, ApiKey, WhichHost, Method, Path, Body)
+  end.
+
+build_request(AppId, ApiKey, WhichHost, Method, Path) ->
+  Host = get_host(WhichHost, AppId),
   Url = lists:flatten(io_lib:format("https://~s~s", [Host, Path])),
   Headers = build_headers(AppId, ApiKey),
   [
@@ -11,16 +44,23 @@ build_request(Method, Host, Path, AppId, ApiKey) ->
     {headers, Headers}
   ].
 
-build_request(Method, Host, Path, Body, AppId, ApiKey) ->
-  Url = lists:flatten(io_lib:format("https://~s~s", [Host, Path])),
-  Headers = build_headers(AppId, ApiKey),
+build_request(AppId, ApiKey, WhichHost, Method, Path, Body) ->
+  Request = build_request(AppId, ApiKey, WhichHost, Method, Path),
   EncodedBody = jiffy:encode(Body),
-  [
-    {method, Method},
-    {url, Url},
-    {body, EncodedBody},
-    {headers, Headers}
-  ].
+  lists:append(Request, [{body, EncodedBody}]).
+
+get_host(read, AppId) ->
+  [Host | _] = lists:map(
+    fun(HostFormat) -> lists:flatten(io_lib:format(HostFormat, [AppId])) end,
+    ?readHosts
+  ),
+  Host;
+get_host(write, AppId) ->
+  [Host | _] = lists:map(
+    fun(HostFormat) -> lists:flatten(io_lib:format(HostFormat, [AppId])) end,
+    ?writeHosts
+  ),
+  Host.
 
 build_headers(AppId, ApiKey) ->
   [
@@ -30,6 +70,23 @@ build_headers(AppId, ApiKey) ->
     {"Connection", "keep-alive"},
     {"User-Agent", "Algolia for Erlang"}
   ].
+
+handle_response({ok, Code, _Headers, Body}) ->
+  handle_http_result(list_to_integer(Code), Body);
+handle_response({error, Reason}) ->
+  {error, Reason}.
+
+handle_http_result(Code, Body) when ((Code >= 200) and (Code < 300)) ->
+  try jiffy:decode(list_to_binary(Body), [return_maps]) of
+    DecodedBody ->
+      {ok, DecodedBody}
+  catch
+    _:_ ->
+      {error, invalid_json}
+  end;
+
+handle_http_result(_Code, Body) ->
+  {error, Body}.
 
 do_request(Request) ->
   Url = proplists:get_value(url, Request),
@@ -42,18 +99,3 @@ do_request(Request) ->
     Body ->
       ibrowse:send_req(Url, Headers, Method, Body)
   end.
-
-handle_response({ok, Code, _Headers, Body}) ->
-  handle_http_result(list_to_integer(Code), Body).
-
-handle_http_result(Code, Body) when ((Code >= 200) and (Code < 300)) ->
-  try jiffy:decode(list_to_binary(Body)) of
-    DecodedBody ->
-      {ok, DecodedBody}
-  catch
-    _:_ ->
-      {error, invalid_json}
-  end;
-
-handle_http_result(_Code, Body) ->
-  {error, Body}.
