@@ -16,6 +16,6 @@ make_transport(ExpectedRequest, Response) ->
       ExpectedRequest ->
         Response;
       _ ->
-        {error, "Response: HTTP 404 Not Found"}
+        {error, lists:flatten(io_lib:format("Invalid request: ~p", [Request]))}
     end
   end.

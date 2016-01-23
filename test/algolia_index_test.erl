@@ -51,64 +51,34 @@ delete_object_test() ->
   ?assertEqual(ExpectedResult, algolia_index:delete_object(Index, <<"4321">>)).
 
 search_test() ->
-  Client = algolia:make_client("foo", "bar"),
+  RequestBody = #{<<"params">> => <<"query=foo">>},
+  ExpectedRequest = {read, post, "/1/indexes/baz/query", RequestBody},
+  ExpectedResult = {ok, #{<<"objectID">> => <<"213">>}},
+  Client = algolia_mock_client:make(ExpectedRequest, ExpectedResult),
   Index = algolia:init_index(Client, "baz"),
-  ?assertEqual(
-    [
-      {method, post},
-      {url, "https://foo-dsn.algolia.net/1/indexes/baz/query"},
-      {body, <<"{\"params\":\"query=foo\"}">>},
-      {headers, [
-        {"Content-Type", "application/json; charset=utf-8"},
-        {"X-Algolia-Application-Id", "foo"},
-        {"X-Algolia-API-Key", "bar"},
-        {"Connection", "keep-alive"},
-        {"User-Agent", "Algolia for Erlang"}
-      ]}
-    ],
-    algolia_index:search_request(Index, <<"foo">>, {[]})
-  ).
+  ?assertEqual(ExpectedResult, algolia_index:search(Index, <<"foo">>)).
 
-search_other_query_test() ->
-  Client = algolia:make_client("foo", "bar"),
+search_encode_query_test() ->
+  RequestBody = #{<<"params">> => <<"query=foo%20bar">>},
+  ExpectedRequest = {read, post, "/1/indexes/baz/query", RequestBody},
+  ExpectedResult = {ok, #{<<"objectID">> => <<"213">>}},
+  Client = algolia_mock_client:make(ExpectedRequest, ExpectedResult),
   Index = algolia:init_index(Client, "baz"),
-  ?assertEqual(
-    [
-      {method, post},
-      {url, "https://foo-dsn.algolia.net/1/indexes/baz/query"},
-      {body, <<"{\"params\":\"query=foo%20bar\"}">>},
-      {headers, [
-        {"Content-Type", "application/json; charset=utf-8"},
-        {"X-Algolia-Application-Id", "foo"},
-        {"X-Algolia-API-Key", "bar"},
-        {"Connection", "keep-alive"},
-        {"User-Agent", "Algolia for Erlang"}
-      ]}
-    ],
-    algolia_index:search_request(Index, <<"foo bar">>, {[]})
-  ).
+  ?assertEqual(ExpectedResult, algolia_index:search(Index, <<"foo bar">>)).
 
 search_with_additional_parameters_test() ->
-  Client = algolia:make_client("foo", "bar"),
+  RequestBody = #{<<"params">> => <<"getRankingInfo=1&hitsPerPage=10&query=foo%20bar&queryType=prefixAll">>},
+  ExpectedRequest = {read, post, "/1/indexes/baz/query", RequestBody},
+  ExpectedResult = {ok, #{<<"objectID">> => <<"213">>}},
+  Client = algolia_mock_client:make(ExpectedRequest, ExpectedResult),
   Index = algolia:init_index(Client, "baz"),
   ?assertEqual(
-    [
-      {method, post},
-      {url, "https://foo-dsn.algolia.net/1/indexes/baz/query"},
-      {body, <<"{\"params\":\"queryType=prefixAll&hitsPerPage=10&getRankingInfo=1&query=foo\"}">>},
-      {headers, [
-        {"Content-Type", "application/json; charset=utf-8"},
-        {"X-Algolia-Application-Id", "foo"},
-        {"X-Algolia-API-Key", "bar"},
-        {"Connection", "keep-alive"},
-        {"User-Agent", "Algolia for Erlang"}
-      ]}
-    ],
-    algolia_index:search_request(Index, <<"foo">>, {[
-      {<<"queryType">>, <<"prefixAll">>},
-      {<<"hitsPerPage">>, 10},
-      {<<"getRankingInfo">>, 1}
-    ]})
+    ExpectedResult,
+    algolia_index:search(Index, <<"foo bar">>, #{
+      <<"queryType">> => <<"prefixAll">>,
+      <<"hitsPerPage">> => 10,
+      <<"getRankingInfo">> => 1
+    })
   ).
 
 get_object_test() ->

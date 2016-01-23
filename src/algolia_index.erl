@@ -2,15 +2,14 @@
 
 -export([add_object/2, update_object/2, search/2, search/3, get_settings/1, set_settings/2]).
 -export([partial_update_object/2, delete_object/2, get_object/2, get_object/3, delete/1, clear/1]).
--export([search_request/3, get_settings_request/1, set_settings_request/2]).
--export([delete_object_request/2]).
+-export([get_settings_request/1, set_settings_request/2]).
 -export([get_object_request/2, get_object_request/3, delete_request/1, clear_request/1]).
 
 -include("client.hrl").
 -include("index.hrl").
 
 add_object(Index, Object) ->
-  IndexName = http_uri:encode(Index#algolia_index.index_name),
+  IndexName = Index#algolia_index.index_name,
   case maps:get(<<"objectID">>, Object, false) of
     false ->
       Path = lists:flatten(io_lib:format("/1/indexes/~s", [IndexName])),
@@ -23,46 +22,37 @@ add_object(Index, Object) ->
   Transport({write, Method, Path, Object}).
 
 update_object(Index, Object) ->
-  IndexName = http_uri:encode(Index#algolia_index.index_name),
+  IndexName = Index#algolia_index.index_name,
   ObjectID = maps:get(<<"objectID">>, Object),
   Path = lists:flatten(io_lib:format("/1/indexes/~s/~s", [IndexName, ObjectID])),
   Transport = Index#algolia_index.client#algolia_client.transport,
   Transport({write, put, Path, Object}).
 
 partial_update_object(Index, Object) ->
-  IndexName = http_uri:encode(Index#algolia_index.index_name),
+  IndexName = Index#algolia_index.index_name,
   ObjectID = maps:get(<<"objectID">>, Object),
   Path = lists:flatten(io_lib:format("/1/indexes/~s/~s/partial", [IndexName, ObjectID])),
   Transport = Index#algolia_index.client#algolia_client.transport,
   Transport({write, post, Path, Object}).
 
 delete_object(Index, ObjectID) ->
-  IndexName = http_uri:encode(Index#algolia_index.index_name),
+  IndexName = Index#algolia_index.index_name,
   Path = lists:flatten(io_lib:format("/1/indexes/~s/~s", [IndexName, ObjectID])),
   Transport = Index#algolia_index.client#algolia_client.transport,
   Transport({write, delete, Path}).
 
-delete_object_request(Index, ObjectID) ->
-  {IndexName, AppId, ApiKey, _, WriteHost} = get_index_options(Index),
-  Path = lists:flatten(io_lib:format("/1/indexes/~s/~s", [IndexName, ObjectID])),
-  algolia_transport:build_request(delete, WriteHost, Path, AppId, ApiKey).
-
 search(Index, Query) ->
-  search(Index, Query, {[]}).
+  search(Index, Query, #{}).
 
-search(Index, Query, Params) ->
-  algolia_transport:handle_response(
-    algolia_transport:do_request(
-      search_request(Index, Query, Params))).
-
-search_request(Index, Query, AdditionalParams) ->
-  {IndexName, AppId, ApiKey, ReadHost, _} = get_index_options(Index),
-  Params = build_search_params(Query, AdditionalParams),
-  Body = {[
-    {<<"params">>, list_to_binary(Params)}
-  ]},
+search(Index, Query, AdditionalParams) ->
+  IndexName = Index#algolia_index.index_name,
   Path = lists:flatten(io_lib:format("/1/indexes/~s/query", [IndexName])),
-  algolia_transport:build_request(post, ReadHost, Path, Body, AppId, ApiKey).
+  Params = build_search_params(Query, AdditionalParams),
+  Body = #{
+    <<"params">> => list_to_binary(Params)
+  },
+  Transport = Index#algolia_index.client#algolia_client.transport,
+  Transport({read, post, Path, Body}).
 
 get_object(Index, ObjectID) ->
   get_object_request(Index, ObjectID).
@@ -133,12 +123,29 @@ get_index_options(Index) ->
   ApiKey = Client#algolia_client.api_key,
   {IndexName, AppId, ApiKey, ReadHost, WriteHost}.
 
-build_search_params(Query, {Params}) ->
-  QueryWithParams = lists:append([
-    Params,
-    [{<<"query">>, Query}]
-  ]),
-  build_query_params(QueryWithParams, []).
+build_search_params(Query, Params) ->
+  QueryWithParams = maps:put(
+    <<"query">>,
+    Query,
+    Params
+  ),
+  maps:fold(fun format_query_string/3, [], QueryWithParams).
+
+format_query_string(Key, Val, Acc) ->
+  case Acc of
+    [] ->
+      Query = io_lib:format("~s=~s", [
+        http_uri:encode(binary_to_list(Key)),
+        http_uri:encode(format_query_value(Val))
+      ]);
+    _ ->
+      Query = io_lib:format("~s&~s=~s", [
+        Acc,
+        http_uri:encode(binary_to_list(Key)),
+        http_uri:encode(format_query_value(Val))
+      ])
+  end,
+  lists:flatten(Query).
 
 build_query_params([], Acc) ->
   Acc;
