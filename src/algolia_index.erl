@@ -3,7 +3,7 @@
 -export([add_object/2, update_object/2, search/2, search/3, get_settings/1, set_settings/2]).
 -export([partial_update_object/2, delete_object/2, get_object/2, get_object/3, delete/1, clear/1]).
 -export([search_request/3, get_settings_request/1, set_settings_request/2]).
--export([update_object_request/2, partial_update_object_request/2, delete_object_request/2]).
+-export([partial_update_object_request/2, delete_object_request/2]).
 -export([get_object_request/2, get_object_request/3, delete_request/1, clear_request/1]).
 
 -include("client.hrl").
@@ -23,14 +23,11 @@ add_object(Index, Object) ->
   Transport({write, Method, Path, Object}).
 
 update_object(Index, Object) ->
-  algolia_transport:handle_response(
-    algolia_transport:do_request(update_object_request(Index, Object))).
-
-update_object_request(Index, Object = {ObjectPropList}) ->
-  {IndexName, AppId, ApiKey, _, WriteHost} = get_index_options(Index),
-  ObjectID = proplists:get_value(<<"objectID">>, ObjectPropList),
+  IndexName = http_uri:encode(Index#algolia_index.index_name),
+  ObjectID = maps:get(<<"objectID">>, Object),
   Path = lists:flatten(io_lib:format("/1/indexes/~s/~s", [IndexName, ObjectID])),
-  algolia_transport:build_request(put, WriteHost, Path, Object, AppId, ApiKey).
+  Transport = Index#algolia_index.client#algolia_client.transport,
+  Transport({write, put, Path, Object}).
 
 partial_update_object(Index, Object) ->
   algolia_transport:handle_response(
