@@ -3,7 +3,7 @@
 -export([add_object/2, update_object/2, search/2, search/3, get_settings/1, set_settings/2]).
 -export([partial_update_object/2, delete_object/2, get_object/2, get_object/3, delete/1, clear/1]).
 -export([get_settings_request/1, set_settings_request/2]).
--export([get_object_request/2, get_object_request/3, delete_request/1, clear_request/1]).
+-export([delete_request/1, clear_request/1]).
 
 -include("client.hrl").
 -include("index.hrl").
@@ -47,7 +47,8 @@ search(Index, Query) ->
 search(Index, Query, AdditionalParams) ->
   IndexName = Index#algolia_index.index_name,
   Path = lists:flatten(io_lib:format("/1/indexes/~s/query", [IndexName])),
-  Params = build_search_params(Query, AdditionalParams),
+  QueryWithParams = maps:put(<<"query">>, Query, AdditionalParams),
+  Params = build_query_params(QueryWithParams),
   Body = #{
     <<"params">> => list_to_binary(Params)
   },
@@ -55,24 +56,19 @@ search(Index, Query, AdditionalParams) ->
   Transport({read, post, Path, Body}).
 
 get_object(Index, ObjectID) ->
-  get_object_request(Index, ObjectID).
+  get_object(Index, ObjectID, <<"">>).
 
 get_object(Index, ObjectID, Attribute) ->
-  get_object_request(Index, ObjectID, Attribute).
-
-get_object_request(Index, ObjectID) ->
-  get_object_request(Index, ObjectID, <<"">>).
-
-get_object_request(Index, ObjectID, Attribute) ->
-  {IndexName, AppId, ApiKey, ReadHost, _} = get_index_options(Index),
+  IndexName = Index#algolia_index.index_name,
   case Attribute of
     <<"">> ->
       Path = lists:flatten(io_lib:format("/1/indexes/~s/~s", [IndexName, ObjectID]));
     Attribute ->
-      UrlParams = build_query_params([{<<"attribute">>, Attribute}], []),
+      UrlParams = build_query_params(#{<<"attribute">> => Attribute}),
       Path = lists:flatten(io_lib:format("/1/indexes/~s/~s?~s", [IndexName, ObjectID, UrlParams]))
   end,
-  algolia_transport:build_request(get, ReadHost, Path, AppId, ApiKey).
+  Transport = Index#algolia_index.client#algolia_client.transport,
+  Transport({read, get, Path}).
 
 get_settings(Index) ->
   algolia_transport:handle_response(
@@ -123,13 +119,8 @@ get_index_options(Index) ->
   ApiKey = Client#algolia_client.api_key,
   {IndexName, AppId, ApiKey, ReadHost, WriteHost}.
 
-build_search_params(Query, Params) ->
-  QueryWithParams = maps:put(
-    <<"query">>,
-    Query,
-    Params
-  ),
-  maps:fold(fun format_query_string/3, [], QueryWithParams).
+build_query_params(Params) ->
+  maps:fold(fun format_query_string/3, [], Params).
 
 format_query_string(Key, Val, Acc) ->
   case Acc of
@@ -146,24 +137,6 @@ format_query_string(Key, Val, Acc) ->
       ])
   end,
   lists:flatten(Query).
-
-build_query_params([], Acc) ->
-  Acc;
-build_query_params([{Key, Val} | Rest], Acc) ->
-  case Acc of
-    [] ->
-      Query = io_lib:format("~s=~s", [
-        http_uri:encode(binary_to_list(Key)),
-        http_uri:encode(format_query_value(Val))
-      ]);
-    _ ->
-      Query = io_lib:format("~s&~s=~s", [
-        Acc,
-        http_uri:encode(binary_to_list(Key)),
-        http_uri:encode(format_query_value(Val))
-      ])
-  end,
-  build_query_params(Rest, lists:flatten(Query)).
 
 format_query_value(Value) when is_list(Value) ->
   Value;

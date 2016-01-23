@@ -82,40 +82,18 @@ search_with_additional_parameters_test() ->
   ).
 
 get_object_test() ->
-  Client = algolia:make_client("foo", "bar"),
+  ExpectedRequest = {read, get, "/1/indexes/baz/4321"},
+  ExpectedResult = {ok, #{<<"objectID">> => <<"213">>}},
+  Client = algolia_mock_client:make(ExpectedRequest, ExpectedResult),
   Index = algolia:init_index(Client, "baz"),
-  ?assertEqual(
-    [
-      {method, get},
-      {url, "https://foo-dsn.algolia.net/1/indexes/baz/4321"},
-      {headers, [
-        {"Content-Type", "application/json; charset=utf-8"},
-        {"X-Algolia-Application-Id", "foo"},
-        {"X-Algolia-API-Key", "bar"},
-        {"Connection", "keep-alive"},
-        {"User-Agent", "Algolia for Erlang"}
-      ]}
-    ],
-    algolia_index:get_object_request(Index, <<"4321">>)
-  ).
+  ?assertEqual(ExpectedResult, algolia_index:get_object(Index, <<"4321">>)).
 
 get_object_with_attributes_test() ->
-  Client = algolia:make_client("foo", "bar"),
+  ExpectedRequest = {read, get, "/1/indexes/baz/4321?attribute=name%2Cage"},
+  ExpectedResult = {ok, #{<<"objectID">> => <<"213">>}},
+  Client = algolia_mock_client:make(ExpectedRequest, ExpectedResult),
   Index = algolia:init_index(Client, "baz"),
-  ?assertEqual(
-    [
-      {method, get},
-      {url, "https://foo-dsn.algolia.net/1/indexes/baz/4321?attribute=name%2Cage"},
-      {headers, [
-        {"Content-Type", "application/json; charset=utf-8"},
-        {"X-Algolia-Application-Id", "foo"},
-        {"X-Algolia-API-Key", "bar"},
-        {"Connection", "keep-alive"},
-        {"User-Agent", "Algolia for Erlang"}
-      ]}
-    ],
-    algolia_index:get_object_request(Index, <<"4321">>, <<"name,age">>)
-  ).
+  ?assertEqual(ExpectedResult, algolia_index:get_object(Index, <<"4321">>, <<"name,age">>)).
 
 get_settings_test() ->
   Client = algolia:make_client("foo", "bar"),
