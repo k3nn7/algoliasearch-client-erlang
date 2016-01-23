@@ -45,10 +45,3 @@ list_indices(Client) ->
   Path = lists:flatten(io_lib:format("/1/indexes", [])),
   Transport = Client#algolia_client.transport,
   Transport({read, get, Path}).
-
-get_client_options(Client) ->
-  [ReadHost | _] = Client#algolia_client.read_hosts,
-  [WriteHost | _] = Client#algolia_client.write_hosts,
-  AppId = Client#algolia_client.app_id,
-  ApiKey = Client#algolia_client.api_key,
-  {AppId, ApiKey, ReadHost, WriteHost}.
