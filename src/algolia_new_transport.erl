@@ -72,7 +72,9 @@ build_headers(AppId, ApiKey) ->
   ].
 
 handle_response({ok, Code, _Headers, Body}) ->
-  handle_http_result(list_to_integer(Code), Body).
+  handle_http_result(list_to_integer(Code), Body);
+handle_response({error, Reason}) ->
+  {error, Reason}.
 
 handle_http_result(Code, Body) when ((Code >= 200) and (Code < 300)) ->
   try jiffy:decode(list_to_binary(Body), [return_maps]) of

@@ -67,3 +67,11 @@ handle_http_error_test() ->
     ExpectedResult,
     algolia_new_transport:handle_response(HttpResponse)
   ).
+
+handle_error_response_test() ->
+  HttpResponse = {error, {conn_failed, {error, nxdomain}}},
+  ExpectedResult = {error, {conn_failed, {error, nxdomain}}},
+  ?assertEqual(
+    ExpectedResult,
+    algolia_new_transport:handle_response(HttpResponse)
+  ).
