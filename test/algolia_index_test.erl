@@ -96,22 +96,11 @@ get_object_with_attributes_test() ->
   ?assertEqual(ExpectedResult, algolia_index:get_object(Index, <<"4321">>, <<"name,age">>)).
 
 get_settings_test() ->
-  Client = algolia:make_client("foo", "bar"),
-  Index = algolia:init_index(Client, "abc xyz"),
-  ?assertEqual(
-    [
-      {method, get},
-      {url, "https://foo-dsn.algolia.net/1/indexes/abc%20xyz/settings"},
-      {headers, [
-        {"Content-Type", "application/json; charset=utf-8"},
-        {"X-Algolia-Application-Id", "foo"},
-        {"X-Algolia-API-Key", "bar"},
-        {"Connection", "keep-alive"},
-        {"User-Agent", "Algolia for Erlang"}
-      ]}
-    ],
-    algolia_index:get_settings_request(Index)
-  ).
+  ExpectedRequest = {read, get, "/1/indexes/baz/settings"},
+  ExpectedResult = {ok, #{<<"objectID">> => <<"213">>}},
+  Client = algolia_mock_client:make(ExpectedRequest, ExpectedResult),
+  Index = algolia:init_index(Client, "baz"),
+  ?assertEqual(ExpectedResult, algolia_index:get_settings(Index)).
 
 set_settings_test() ->
   Client = algolia:make_client("foo", "bar"),
