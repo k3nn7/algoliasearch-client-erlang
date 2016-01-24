@@ -39,7 +39,7 @@ Use follow code to add object to `example` index:
 1> Index = algolia:init_index(Client, "example").
 2> Object = #{<<"content">> => <<"foo">>}.
 3> algolia_index:add_object(Index, Object).
-4> {ok, #{<<"createdAt">> => <<"2016-01-24T08:34:47.700Z">>,
+{ok, #{<<"createdAt">> => <<"2016-01-24T08:34:47.700Z">>,
   <<"objectID">> => <<"129196290">>,
   <<"taskID">> => 699175850}}
 
@@ -48,8 +48,8 @@ Use follow code to add object to `example` index:
 Now you can query this index:
 
 ```erlang
-5> algolia_index:search(Index, <<"foo">>).
-6> {ok, #{<<"hits">> => [
+4> algolia_index:search(Index, <<"foo">>).
+{ok, #{<<"hits">> => [
     #{<<"_highlightResult">> => #{<<"content">> => #{<<"matchLevel">> => <<"full">>,
       <<"matchedWords">> => [<<"foo">>],
       <<"value">> => <<"<em>foo</em>">>}},
