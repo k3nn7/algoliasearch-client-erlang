@@ -16,6 +16,17 @@ init_index_test() ->
 
 list_indices_test() ->
   ExpectedRequest = {read, get, "/1/indexes"},
-  ExpectedResult = {ok, #{<<"items">> => []}},
+  ExpectedResult = {ok,
+    #{<<"items">> => [
+      #{<<"createdAt">> => <<"2015-11-15T13:14:22.878Z">>,
+        <<"dataSize">> => 221,
+        <<"entries">> => 13,
+        <<"fileSize">> => 970,
+        <<"lastBuildTimeS">> => 0,
+        <<"name">> => <<"Erlang">>,
+        <<"numberOfPendingTask">> => 0,
+        <<"pendingTask">> => false,
+        <<"updatedAt">> => <<"2016-01-10T23:11:41.540Z">>}],
+      <<"nbPages">> => 1}},
   Client = algolia_mock_client:make(ExpectedRequest, ExpectedResult),
   ?assertEqual(ExpectedResult, algolia:list_indices(Client)).
