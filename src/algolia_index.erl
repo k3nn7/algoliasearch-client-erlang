@@ -16,7 +16,10 @@ add_object(Index, Object) ->
       Path = lists:flatten(io_lib:format("/1/indexes/~s", [IndexName])),
       Method = post;
     ObjectID ->
-      Path = lists:flatten(io_lib:format("/1/indexes/~s/~s", [IndexName, ObjectID])),
+      Path = lists:flatten(io_lib:format(
+        "/1/indexes/~s/~s",
+        [IndexName, uri_encode(ObjectID)]
+      )),
       Method = put
   end,
   Transport = Index#algolia_index.client#algolia_client.transport,
@@ -26,7 +29,10 @@ add_object(Index, Object) ->
 update_object(Index, Object) ->
   IndexName = Index#algolia_index.index_name,
   ObjectID = maps:get(<<"objectID">>, Object),
-  Path = lists:flatten(io_lib:format("/1/indexes/~s/~s", [IndexName, ObjectID])),
+  Path = lists:flatten(io_lib:format(
+    "/1/indexes/~s/~s",
+    [IndexName, uri_encode(ObjectID)]
+  )),
   Transport = Index#algolia_index.client#algolia_client.transport,
   Transport({write, put, Path, Object}).
 
@@ -34,14 +40,20 @@ update_object(Index, Object) ->
 partial_update_object(Index, Object) ->
   IndexName = Index#algolia_index.index_name,
   ObjectID = maps:get(<<"objectID">>, Object),
-  Path = lists:flatten(io_lib:format("/1/indexes/~s/~s/partial", [IndexName, ObjectID])),
+  Path = lists:flatten(io_lib:format(
+    "/1/indexes/~s/~s/partial",
+    [IndexName, uri_encode(ObjectID)]
+  )),
   Transport = Index#algolia_index.client#algolia_client.transport,
   Transport({write, post, Path, Object}).
 
 -spec(delete_object/2 :: (#algolia_index{}, binary()) -> response()).
 delete_object(Index, ObjectID) ->
   IndexName = Index#algolia_index.index_name,
-  Path = lists:flatten(io_lib:format("/1/indexes/~s/~s", [IndexName, ObjectID])),
+  Path = lists:flatten(io_lib:format(
+    "/1/indexes/~s/~s",
+    [IndexName, uri_encode(ObjectID)]
+  )),
   Transport = Index#algolia_index.client#algolia_client.transport,
   Transport({write, delete, Path}).
 
@@ -70,10 +82,13 @@ get_object(Index, ObjectID, Attribute) ->
   IndexName = Index#algolia_index.index_name,
   case Attribute of
     <<"">> ->
-      Path = lists:flatten(io_lib:format("/1/indexes/~s/~s", [IndexName, ObjectID]));
+      Path = lists:flatten(io_lib:format("/1/indexes/~s/~s", [IndexName, uri_encode(ObjectID)]));
     Attribute ->
       UrlParams = build_query_params(#{<<"attribute">> => Attribute}),
-      Path = lists:flatten(io_lib:format("/1/indexes/~s/~s?~s", [IndexName, ObjectID, UrlParams]))
+      Path = lists:flatten(io_lib:format(
+        "/1/indexes/~s/~s?~s",
+        [IndexName, uri_encode(ObjectID), UrlParams]
+      ))
   end,
   Transport = Index#algolia_index.client#algolia_client.transport,
   Transport({read, get, Path}).
@@ -131,3 +146,8 @@ format_query_value(Value) when is_binary(Value) ->
   binary_to_list(Value);
 format_query_value(Value) when is_integer(Value) ->
   integer_to_list(Value).
+
+uri_encode(Value) when is_list(Value) ->
+  http_uri:encode(Value);
+uri_encode(Value) when is_binary(Value) ->
+  uri_encode(binary_to_list(Value)).

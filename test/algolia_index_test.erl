@@ -15,13 +15,13 @@ add_object_test() ->
 
 add_object_with_given_id_test() ->
   Object = #{
-    <<"objectID">> => <<"4321">>,
+    <<"objectID">> => <<"4321 1234">>,
     <<"content">> => <<"foo bar">>
   },
-  ExpectedRequest = {write, put, "/1/indexes/baz/4321", Object},
+  ExpectedRequest = {write, put, "/1/indexes/baz/4321%201234", Object},
   ExpectedResult = {ok,
     #{<<"createdAt">> => <<"2016-01-24T08:34:47.700Z">>,
-      <<"objectID">> => <<"4321">>,
+      <<"objectID">> => <<"4321 1234">>,
       <<"taskID">> => 699175850}},
   Client = algolia_mock_client:make(ExpectedRequest, ExpectedResult),
   Index = algolia:init_index(Client, "baz"),
@@ -29,10 +29,24 @@ add_object_with_given_id_test() ->
 
 update_object_test() ->
   Object = #{
-    <<"objectID">> => <<"4321">>,
+    <<"objectID">> => <<"4321 1234">>,
     <<"content">> => <<"foo bar">>
   },
-  ExpectedRequest = {write, put, "/1/indexes/baz/4321", Object},
+  ExpectedRequest = {write, put, "/1/indexes/baz/4321%201234", Object},
+  ExpectedResult = {ok,
+    #{<<"objectID">> => <<"4321 1234">>,
+      <<"taskID">> => 699180670,
+      <<"updatedAt">> => <<"2016-01-24T08:37:05.242Z">>}},
+  Client = algolia_mock_client:make(ExpectedRequest, ExpectedResult),
+  Index = algolia:init_index(Client, "baz"),
+  ?assertEqual(ExpectedResult, algolia_index:update_object(Index, Object)).
+
+update_object_with_escaped_id_test() ->
+  Object = #{
+    <<"objectID">> => <<"foo bar">>,
+    <<"content">> => <<"foo bar">>
+  },
+  ExpectedRequest = {write, put, "/1/indexes/baz/foo%20bar", Object},
   ExpectedResult = {ok,
     #{<<"objectID">> => <<"4321">>,
       <<"taskID">> => 699180670,
@@ -43,12 +57,12 @@ update_object_test() ->
 
 partial_update_object_test() ->
   Object = #{
-    <<"objectID">> => <<"4321">>,
+    <<"objectID">> => <<"4321 1234">>,
     <<"content">> => <<"foo bar">>
   },
-  ExpectedRequest = {write, post, "/1/indexes/baz/4321/partial", Object},
+  ExpectedRequest = {write, post, "/1/indexes/baz/4321%201234/partial", Object},
   ExpectedResult = {ok,
-    #{<<"objectID">> => <<"4321">>,
+    #{<<"objectID">> => <<"4321 1234">>,
       <<"taskID">> => 699180670,
       <<"updatedAt">> => <<"2016-01-24T08:37:05.242Z">>}},
   Client = algolia_mock_client:make(ExpectedRequest, ExpectedResult),
@@ -56,14 +70,14 @@ partial_update_object_test() ->
   ?assertEqual(ExpectedResult, algolia_index:partial_update_object(Index, Object)).
 
 delete_object_test() ->
-  ExpectedRequest = {write, delete, "/1/indexes/baz/4321"},
+  ExpectedRequest = {write, delete, "/1/indexes/baz/4321%201234"},
   ExpectedResult = {ok,
     #{<<"deletedAt">> => <<"2016-01-24T08:40:40.717Z">>,
-      <<"objectID">> => <<"4321">>,
+      <<"objectID">> => <<"4321 1234">>,
       <<"taskID">> => 1012510111}},
   Client = algolia_mock_client:make(ExpectedRequest, ExpectedResult),
   Index = algolia:init_index(Client, "baz"),
-  ?assertEqual(ExpectedResult, algolia_index:delete_object(Index, <<"4321">>)).
+  ?assertEqual(ExpectedResult, algolia_index:delete_object(Index, <<"4321 1234">>)).
 
 search_test() ->
   RequestBody = #{<<"params">> => <<"query=foo">>},
@@ -133,20 +147,20 @@ search_with_additional_parameters_test() ->
   ).
 
 get_object_test() ->
-  ExpectedRequest = {read, get, "/1/indexes/baz/4321"},
+  ExpectedRequest = {read, get, "/1/indexes/baz/4321%201234"},
   ExpectedResult = {ok,
-    #{<<"content">> => <<"foo bar">>, <<"objectID">> => <<"129196290">>}},
+    #{<<"content">> => <<"foo bar">>, <<"objectID">> => <<"4321 1234">>}},
   Client = algolia_mock_client:make(ExpectedRequest, ExpectedResult),
   Index = algolia:init_index(Client, "baz"),
-  ?assertEqual(ExpectedResult, algolia_index:get_object(Index, <<"4321">>)).
+  ?assertEqual(ExpectedResult, algolia_index:get_object(Index, <<"4321 1234">>)).
 
 get_object_with_attributes_test() ->
-  ExpectedRequest = {read, get, "/1/indexes/baz/4321?attribute=name%2Cage"},
+  ExpectedRequest = {read, get, "/1/indexes/baz/4321%201234?attribute=name%2Cage"},
   ExpectedResult = {ok,
-    #{<<"content">> => <<"foo bar">>, <<"objectID">> => <<"129196290">>}},
+    #{<<"content">> => <<"foo bar">>, <<"objectID">> => <<"4321 1234">>}},
   Client = algolia_mock_client:make(ExpectedRequest, ExpectedResult),
   Index = algolia:init_index(Client, "baz"),
-  ?assertEqual(ExpectedResult, algolia_index:get_object(Index, <<"4321">>, <<"name,age">>)).
+  ?assertEqual(ExpectedResult, algolia_index:get_object(Index, <<"4321 1234">>, <<"name,age">>)).
 
 get_settings_test() ->
   ExpectedRequest = {read, get, "/1/indexes/baz/settings"},
@@ -176,6 +190,14 @@ delete_test() ->
     #{<<"deletedAt">> => <<"2016-01-24T08:57:49.752Z">>, <<"taskID">> => 699201240}},
   Client = algolia_mock_client:make(ExpectedRequest, ExpectedResult),
   Index = algolia:init_index(Client, "baz"),
+  ?assertEqual(ExpectedResult, algolia_index:delete(Index)).
+
+delete_escaped_index_name_test() ->
+  ExpectedRequest = {write, delete, "/1/indexes/foo%20bar"},
+  ExpectedResult = {ok,
+    #{<<"deletedAt">> => <<"2016-01-24T08:57:49.752Z">>, <<"taskID">> => 699201240}},
+  Client = algolia_mock_client:make(ExpectedRequest, ExpectedResult),
+  Index = algolia:init_index(Client, "foo bar"),
   ?assertEqual(ExpectedResult, algolia_index:delete(Index)).
 
 clear_test() ->

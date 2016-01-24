@@ -13,7 +13,7 @@ make_client(AppId, ApiKey) ->
 
 init_index(Client, IndexName) ->
   #algolia_index{
-    index_name = IndexName,
+    index_name = http_uri:encode(IndexName),
     client = Client
   }.
 
