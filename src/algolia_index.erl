@@ -6,9 +6,9 @@
 -include("client.hrl").
 -include("index.hrl").
 
--type(response() :: {ok, map()} | {error, any()}).
+-type response() :: {ok, map()} | {error, any()}.
 
--spec(add_object/2 :: (#algolia_index{}, map()) -> response()).
+-spec add_object(#algolia_index{}, map()) -> response().
 add_object(Index, Object) ->
   IndexName = Index#algolia_index.index_name,
   case maps:get(<<"objectID">>, Object, false) of
@@ -25,7 +25,7 @@ add_object(Index, Object) ->
   Transport = Index#algolia_index.client#algolia_client.transport,
   Transport({write, Method, Path, Object}).
 
--spec(update_object/2 :: (#algolia_index{}, map()) -> response()).
+-spec update_object(#algolia_index{}, map()) -> response().
 update_object(Index, Object) ->
   IndexName = Index#algolia_index.index_name,
   ObjectID = maps:get(<<"objectID">>, Object),
@@ -36,7 +36,7 @@ update_object(Index, Object) ->
   Transport = Index#algolia_index.client#algolia_client.transport,
   Transport({write, put, Path, Object}).
 
--spec(partial_update_object/2 :: (#algolia_index{}, map()) -> response()).
+-spec partial_update_object(#algolia_index{}, map()) -> response().
 partial_update_object(Index, Object) ->
   IndexName = Index#algolia_index.index_name,
   ObjectID = maps:get(<<"objectID">>, Object),
@@ -47,7 +47,7 @@ partial_update_object(Index, Object) ->
   Transport = Index#algolia_index.client#algolia_client.transport,
   Transport({write, post, Path, Object}).
 
--spec(delete_object/2 :: (#algolia_index{}, binary()) -> response()).
+-spec delete_object(#algolia_index{}, binary()) -> response().
 delete_object(Index, ObjectID) ->
   IndexName = Index#algolia_index.index_name,
   Path = lists:flatten(io_lib:format(
@@ -57,11 +57,11 @@ delete_object(Index, ObjectID) ->
   Transport = Index#algolia_index.client#algolia_client.transport,
   Transport({write, delete, Path}).
 
--spec(search/2 :: (#algolia_index{}, binary()) -> response()).
+-spec search(#algolia_index{}, binary()) -> response().
 search(Index, Query) ->
   search(Index, Query, #{}).
 
--spec(search/3 :: (#algolia_index{}, binary(), map()) -> response()).
+-spec search(#algolia_index{}, binary(), map()) -> response().
 search(Index, Query, AdditionalParams) ->
   IndexName = Index#algolia_index.index_name,
   Path = lists:flatten(io_lib:format("/1/indexes/~s/query", [IndexName])),
@@ -73,11 +73,11 @@ search(Index, Query, AdditionalParams) ->
   Transport = Index#algolia_index.client#algolia_client.transport,
   Transport({read, post, Path, Body}).
 
--spec(get_object/2 :: (#algolia_index{}, string()) -> response()).
+-spec get_object(#algolia_index{}, string()) -> response().
 get_object(Index, ObjectID) ->
   get_object(Index, ObjectID, <<"">>).
 
--spec(get_object/3 :: (#algolia_index{}, string(), string()) -> response()).
+-spec get_object(#algolia_index{}, string(), string()) -> response().
 get_object(Index, ObjectID, Attribute) ->
   IndexName = Index#algolia_index.index_name,
   case Attribute of
@@ -93,28 +93,28 @@ get_object(Index, ObjectID, Attribute) ->
   Transport = Index#algolia_index.client#algolia_client.transport,
   Transport({read, get, Path}).
 
--spec(get_settings/1 :: (#algolia_index{}) -> response()).
+-spec get_settings(#algolia_index{}) -> response().
 get_settings(Index) ->
   IndexName = Index#algolia_index.index_name,
   Path = lists:flatten(io_lib:format("/1/indexes/~s/settings", [IndexName])),
   Transport = Index#algolia_index.client#algolia_client.transport,
   Transport({read, get, Path}).
 
--spec(set_settings/2 :: (#algolia_index{}, map()) -> response()).
+-spec set_settings(#algolia_index{}, map()) -> response().
 set_settings(Index, Settings) ->
   IndexName = Index#algolia_index.index_name,
   Path = lists:flatten(io_lib:format("/1/indexes/~s/settings", [IndexName])),
   Transport = Index#algolia_index.client#algolia_client.transport,
   Transport({write, put, Path, Settings}).
 
--spec(delete/1 :: (#algolia_index{}) -> response()).
+-spec delete(#algolia_index{}) -> response().
 delete(Index) ->
   IndexName = Index#algolia_index.index_name,
   Path = lists:flatten(io_lib:format("/1/indexes/~s", [IndexName])),
   Transport = Index#algolia_index.client#algolia_client.transport,
   Transport({write, delete, Path}).
 
--spec(clear/1 :: (#algolia_index{}) -> response()).
+-spec clear(#algolia_index{}) -> response().
 clear(Index) ->
   IndexName = Index#algolia_index.index_name,
   Path = lists:flatten(io_lib:format("/1/indexes/~s/clear", [IndexName])),
