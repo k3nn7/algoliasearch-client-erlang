@@ -16,7 +16,7 @@
   "~s-3.algolianet.com"
 ]).
 
--spec(make_transport/2 :: (string(), string()) -> fun()).
+-spec make_transport(string(), string()) -> fun().
 make_transport(AppId, ApiKey) ->
   HttpRequestBuilder = make_request_builder(AppId, ApiKey),
   fun(Request) ->
@@ -27,7 +27,7 @@ make_transport(AppId, ApiKey) ->
     )
   end.
 
--spec(make_request_builder/2 :: (string(), string()) -> fun()).
+-spec make_request_builder(string(), string()) -> fun().
 make_request_builder(AppId, ApiKey) ->
   fun
     ({WhichHost, Method, Path}) ->
